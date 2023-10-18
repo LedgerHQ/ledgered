@@ -81,7 +81,7 @@ class RepoManifest:
 # CLI-oriented code #
 
 
-def parse_args() -> Namespace:
+def parse_args() -> Namespace:  # pragma: no cover
     parser = ArgumentParser()
     parser.add_argument("manifest",
                         type=Path,
@@ -124,7 +124,7 @@ def parse_args() -> Namespace:
     return parser.parse_args()
 
 
-def main():
+def main():  # pragma: no cover
     args = parse_args()
     assert args.manifest.is_file(), f"'{args.manifest.resolve()}' does not appear to be a file."
     manifest = args.manifest.resolve()
