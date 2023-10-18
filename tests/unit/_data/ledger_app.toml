@@ -1,0 +1,8 @@
+[app]
+sdk = "Rust"
+build_directory = "."
+devices = ["nanos", "Stax"]
+
+[tests]
+unit_directory = "unit"
+pytest_directory = "pytest"

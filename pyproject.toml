@@ -30,6 +30,12 @@ dependencies = [
     "toml",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov"
+]
+
 [project.urls]
 Home = "https://github.com/LedgerHQ/ledgered"
 

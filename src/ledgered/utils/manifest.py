@@ -1,17 +1,19 @@
 import logging
 import sys
+import toml
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Union
-
-from toml import loads
+from typing import Dict, IO, Iterable, Optional, Set, Union
 
 MANIFEST_FILE_NAME = "ledger_app.toml"
+EXISTING_DEVICES = ["nanos", "nanox", "nanos+", "stax"]
 
 
 @dataclass
 class TestsConfig:
+    __test__ = False  # deactivate pytest discovery warning
+
     unit_directory: Optional[Path]
     pytest_directory: Optional[Path]
 
@@ -26,13 +28,19 @@ class TestsConfig:
 class AppConfig:
     sdk: str
     build_directory: Path
-    devices: List[str]
+    devices: Set[str]
 
-    def __init__(self, sdk: str, build_directory: Union[str, Path], devices: List[str]) -> None:
-        if not sdk.lower() in ["rust", "c"]:
+    def __init__(self, sdk: str, build_directory: Union[str, Path], devices: Iterable[str]) -> None:
+        sdk = sdk.lower()
+        if sdk not in ["rust", "c"]:
             raise ValueError(f"'{sdk}' unknown. Must be either 'C' or 'Rust'")
-        self.sdk = sdk.lower()
+        self.sdk = sdk
         self.build_directory = Path(build_directory)
+        devices = {device.lower() for device in devices}
+        unknown_devices = devices.difference(EXISTING_DEVICES)
+        if unknown_devices:
+            unknown_devices_str = "', '".join(unknown_devices)
+            raise ValueError(f"Unknown devices: '{unknown_devices_str}'")
         self.devices = devices
 
     @property
@@ -41,7 +49,7 @@ class AppConfig:
 
     @property
     def is_c(self) -> bool:
-        return True
+        return not self.is_rust
 
 
 @dataclass
@@ -53,14 +61,21 @@ class RepoManifest:
         self.app = AppConfig(**app)
         self.tests = None if tests is None else TestsConfig(**tests)
 
+    @staticmethod
+    def from_string(content: str) -> "RepoManifest":
+        return RepoManifest(**toml.loads(content))
 
-def parse_manifest(content: str, root: Path = Path(".")) -> RepoManifest:
-    """
-    Parse the raw content of an application manifest ('ledger_app.toml') and
-    extract relevant information.
-    Returned value will depends on if the application is a C or a Rust one.
-    """
-    return RepoManifest(**loads(content))
+    @staticmethod
+    def from_io(manifest_io: IO) -> "RepoManifest":
+        return RepoManifest(**toml.load(manifest_io))
+
+    @staticmethod
+    def from_path(path: Path) -> "RepoManifest":
+        if path.is_dir():
+            path = path / MANIFEST_FILE_NAME
+        assert path.is_file(), f"'{path.resolve()}' is not a manifest file."
+        with path.open() as manifest_io:
+            return RepoManifest.from_io(manifest_io)
 
 
 # CLI-oriented code #
@@ -113,8 +128,7 @@ def main():
     args = parse_args()
     assert args.manifest.is_file(), f"'{args.manifest.resolve()}' does not appear to be a file."
     manifest = args.manifest.resolve()
-    with manifest.open() as filee:
-        repo_manifest = parse_manifest(filee.read())
+    repo_manifest = RepoManifest.from_path(manifest)
 
     display_content = dict()
     if args.output_sdk:

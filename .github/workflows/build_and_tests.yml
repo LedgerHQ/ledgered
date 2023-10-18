@@ -1,4 +1,4 @@
-name: Build, test and deploy Ragger
+name: Build, test and deploy Ledgered
 
 on:
   workflow_dispatch:
@@ -14,9 +14,33 @@ on:
       - develop
 
 jobs:
-  package_and_deploy:
-    name: Build and deploy Ledgered Python Package
+
+  build_install_test:
+    name: Build, install and test the Ledgered Python package
     runs-on: ubuntu-latest
+    steps:
+
+    - name: Clone
+      uses: actions/checkout@v3
+
+    - name: Build & install
+      run: |
+        pip install -U pip
+        pip install -U .[dev]
+
+    - name: Run tests and generate coverage
+      run: pytest -v --tb=short tests/ --cov ledgered --cov-report xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        name: codecov-ledgered
+
+
+  package_and_deploy:
+    name: Build and deploy Ledgered Python package
+    runs-on: ubuntu-latest
+    needs: [build_install_test]
     steps:
 
     - name: Clone
