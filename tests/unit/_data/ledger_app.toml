@@ -1,6 +1,6 @@
 [app]
 sdk = "Rust"
-build_directory = "."
+build_directory = ""
 devices = ["nanos", "Stax"]
 
 [tests]

@@ -1,7 +1,8 @@
 from pathlib import Path
 from unittest import TestCase
 
-from ledgered.utils.manifest import AppConfig, RepoManifest, TestsConfig, MANIFEST_FILE_NAME
+from ledgered.utils.manifest import AppConfig, LegacyManifest, Manifest, TestsConfig, \
+    MANIFEST_FILE_NAME
 
 
 TEST_MANIFEST_DIRECTORY = Path(__file__).parent.parent / "_data"
@@ -28,7 +29,8 @@ class TestAppConfig(TestCase):
         devices = {"hic sunt", "dracones"}
         with self.assertRaises(ValueError) as error:
             AppConfig(sdk="rust", build_directory=str(), devices=devices)
-        self.assertIn("', '".join(devices), str(error.exception))
+        for device in devices:
+            self.assertIn(device, str(error.exception))
 
 
 class TestTestsConfig(TestCase):
@@ -48,12 +50,12 @@ class TestTestsConfig(TestCase):
         self.assertIsNone(config.pytest_directory)
 
 
-class TestRepoManifest(TestCase):
+class TestManifest(TestCase):
 
-    def check_ledger_app_toml(self, manifest: RepoManifest) -> None:
+    def check_ledger_app_toml(self, manifest: Manifest) -> None:
         self.assertEqual(manifest.app.sdk, "rust")
         self.assertEqual(manifest.app.devices, {"nanos", "stax"})
-        self.assertEqual(manifest.app.build_directory, Path())
+        self.assertEqual(manifest.app.build_directory, Path(""))
         self.assertTrue(manifest.app.is_rust)
         self.assertFalse(manifest.app.is_c)
 
@@ -63,20 +65,45 @@ class TestRepoManifest(TestCase):
     def test___init__ok(self):
         app = {"sdk": "rust", "devices": ["NANOS", "stAX"], "build_directory": ""}
         tests = {"unit_directory": "unit", "pytest_directory": "pytest"}
-        self.check_ledger_app_toml(RepoManifest(app, tests))
+        self.check_ledger_app_toml(Manifest(app, tests))
 
     def test_from_path_ok(self):
-        self.check_ledger_app_toml(RepoManifest.from_path(TEST_MANIFEST_DIRECTORY))
-        self.check_ledger_app_toml(RepoManifest.from_path(TEST_MANIFEST_DIRECTORY / MANIFEST_FILE_NAME))
+        self.check_ledger_app_toml(Manifest.from_path(TEST_MANIFEST_DIRECTORY))
+        self.check_ledger_app_toml(Manifest.from_path(TEST_MANIFEST_DIRECTORY / MANIFEST_FILE_NAME))
 
     def test_from_path_nok(self):
         with self.assertRaises(AssertionError):
-            RepoManifest.from_path(Path("/not/existing/path"))
+            Manifest.from_path(Path("/not/existing/path"))
 
     def test_from_io_ok(self):
         with (TEST_MANIFEST_DIRECTORY / MANIFEST_FILE_NAME).open() as manifest_io:
-            self.check_ledger_app_toml(RepoManifest.from_io(manifest_io))
+            self.check_ledger_app_toml(Manifest.from_io(manifest_io))
 
     def test_from_string_ok(self):
         with (TEST_MANIFEST_DIRECTORY / MANIFEST_FILE_NAME).open() as manifest_io:
-            self.check_ledger_app_toml(RepoManifest.from_string(manifest_io.read()))
+            self.check_ledger_app_toml(Manifest.from_string(manifest_io.read()))
+
+    def test_check_ok(self):
+        Manifest.from_path(TEST_MANIFEST_DIRECTORY).check(TEST_MANIFEST_DIRECTORY)
+
+    def test_check_nok(self):
+        with self.assertRaises(AssertionError):
+            Manifest.from_path(TEST_MANIFEST_DIRECTORY).check("wrong_directory")
+
+
+class TestLegacyManifest(TestCase):
+
+    def test___init__ok(self):
+        manifest = LegacyManifest(TEST_MANIFEST_DIRECTORY / "legacy" / "ledger_app.toml")
+        self.assertEqual(manifest.manifest_path, Path("Cargo.toml"))
+
+    def test___init__ok2(self):
+        manifest = LegacyManifest(TEST_MANIFEST_DIRECTORY / "legacy")
+        self.assertEqual(manifest.manifest_path, Path("Cargo.toml"))
+
+    def test_check_ok(self):
+        LegacyManifest(TEST_MANIFEST_DIRECTORY / "legacy").check(TEST_MANIFEST_DIRECTORY / "legacy")
+
+    def test_check_nok(self):
+        with self.assertRaises(AssertionError):
+            LegacyManifest(TEST_MANIFEST_DIRECTORY / "legacy").check("wrong_directory")
