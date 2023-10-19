@@ -221,7 +221,7 @@ def main():  # pragma: no cover
     if args.output_sdk:
         display_content["sdk"] = repo_manifest.app.sdk
     if args.output_devices:
-        display_content["devices"] = repo_manifest.app.devices
+        display_content["devices"] = list(repo_manifest.app.devices)
     if args.output_unit_directory:
         if repo_manifest.tests is None or repo_manifest.test.unit_directory is None:
             logging.error("This manifest does not contains the 'tests.unit_directory' field")
