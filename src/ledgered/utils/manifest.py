@@ -1,6 +1,7 @@
 import logging
 import sys
 import toml
+from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from pathlib import Path
@@ -52,8 +53,15 @@ class AppConfig:
         return not self.is_rust
 
 
+class RepoManifest(ABC):
+
+    @abstractmethod
+    def check(self, directory: Union[str, Path]) -> None:
+        raise NotImplementedError
+
+
 @dataclass
-class RepoManifest:
+class Manifest(RepoManifest):
     app: AppConfig
     tests: Optional[TestsConfig]
 
@@ -62,27 +70,73 @@ class RepoManifest:
         self.tests = None if tests is None else TestsConfig(**tests)
 
     @staticmethod
-    def from_string(content: str) -> "RepoManifest":
-        return RepoManifest(**toml.loads(content))
+    def from_string(content: str) -> "Manifest":
+        return Manifest(**toml.loads(content))
 
     @staticmethod
-    def from_io(manifest_io: IO) -> "RepoManifest":
-        return RepoManifest(**toml.load(manifest_io))
+    def from_io(manifest_io: IO) -> "Manifest":
+        return Manifest(**toml.load(manifest_io))
 
     @staticmethod
-    def from_path(path: Path) -> "RepoManifest":
+    def from_path(path: Path) -> "Manifest":
         if path.is_dir():
             path = path / MANIFEST_FILE_NAME
         assert path.is_file(), f"'{path.resolve()}' is not a manifest file."
-        with path.open() as manifest_io:
-            return RepoManifest.from_io(manifest_io)
+        return Manifest(**toml.load(path))
+
+    def check(self, base_directory: Union[str, Path]) -> None:
+        base_directory = Path(base_directory)
+        assert base_directory.is_dir(), f"Given '{base_directory}' must be a directory"
+        build_file = base_directory / self.app.build_directory / \
+            ("Cargo.toml" if self.app.is_rust else "Makefile")
+        logging.info("Checking existence of file %s", build_file)
+        assert build_file.is_file(), f"No file '{build_file}' (from the given base directory " \
+            f"'{base_directory}' + the manifest path '{self.app.build_directory}') was found"
+
+
+class LegacyManifest(RepoManifest):
+
+    def __init__(self, manifest_path: Union[str, Path]) -> None:
+        manifest_path = Path(manifest_path)
+        if manifest_path.is_dir():
+            manifest_path = manifest_path / MANIFEST_FILE_NAME
+        data = toml.load(str(manifest_path))
+        self.manifest_path = Path(data["rust-app"]["manifest-path"])
+
+    def check(self, base_directory: Union[str, Path]) -> None:
+        base_directory = Path(base_directory)
+        assert base_directory.is_dir(), f"Given '{base_directory}' must be an existing directory"
+        cargo_toml = base_directory / self.manifest_path
+        logging.info("Checking existence of file %s", cargo_toml)
+        assert cargo_toml.is_file(), f"No file '{cargo_toml}' (from the given base directory " \
+            f"'{base_directory}' + the manifest path '{self.manifest_path}') was found"
 
 
 # CLI-oriented code #
 
 
-def parse_args() -> Namespace:
-    parser = ArgumentParser()
+def parse_args() -> Namespace:  # pragma: no cover
+    parser = ArgumentParser(prog="ledger-manifest",
+                            description="Utilitary to parse and check an application "
+                            "'ledger_app.toml' manifest")
+
+    # generic options
+    parser.add_argument('-v', '--verbose', action='count', default=0)
+    parser.add_argument("-l",
+                        "--legacy",
+                        required=False,
+                        action="store_true",
+                        default=False,
+                        help="Specifies if the 'ledger_app.toml' file is a legacy one (with "
+                        "'rust-app' section)")
+    parser.add_argument("-c",
+                        "--check",
+                        required=False,
+                        type=Path,
+                        default=None,
+                        help="Check the manifest content against the provided directory.")
+
+    # display options
     parser.add_argument("manifest",
                         type=Path,
                         help=f"The manifest file, generally '{MANIFEST_FILE_NAME}' at the root of "
@@ -106,8 +160,6 @@ def parse_args() -> Namespace:
                         action='store_true',
                         default=False,
                         help="outputs the list of devices supported by the application")
-    # 'app' section
-    # 'tests' section
     parser.add_argument("-ou",
                         "--output-unit-directory",
                         required=False,
@@ -124,17 +176,50 @@ def parse_args() -> Namespace:
     return parser.parse_args()
 
 
-def main():
+def main():  # pragma: no cover
     args = parse_args()
     assert args.manifest.is_file(), f"'{args.manifest.resolve()}' does not appear to be a file."
     manifest = args.manifest.resolve()
-    repo_manifest = RepoManifest.from_path(manifest)
 
+    # verbosity
+    if args.verbose == 1:
+        logging.root.setLevel(logging.INFO)
+    elif args.verbose > 1:
+        logging.root.setLevel(logging.DEBUG)
+
+    # compatibility check: legacy manifest cannot display sdk, devices, unit/pytest directory
+    if args.legacy and (args.output_sdk or args.output_devices or args.output_devices
+                        or args.output_unit_directory or args.output_pytest_directory):
+        raise ValueError("'-l' option is not compatible with '-os', '-od', 'ou' or 'op'")
+
+    # parsing the manifest
+    if args.legacy:
+        logging.info("Expecting a legacy manifest")
+        repo_manifest = LegacyManifest(manifest)
+    else:
+        logging.info("Expecting a classic manifest")
+        repo_manifest = Manifest.from_path(manifest)
+
+    # check directory path against manifest data
+    if args.check is not None:
+        logging.info("Checking the manifest")
+        repo_manifest.check(args.check)
+        return
+
+    # no check
+    logging.info("Displaying manifest info")
     display_content = dict()
+
+    # build_directory can be 'deduced' from legacy manifest
+    if args.output_build_directory:
+        if args.legacy:
+            display_content["build_directory"] = repo_manifest.manifest_path.parent
+        else:
+            display_content["build_directory"] = repo_manifest.app.build_directory
+
+    # unlike build_directory, other field can not be deduced from legacy manifest
     if args.output_sdk:
         display_content["sdk"] = repo_manifest.app.sdk
-    if args.output_build_directory:
-        display_content["build_directory"] = repo_manifest.app.build_directory
     if args.output_devices:
         display_content["devices"] = repo_manifest.app.devices
     if args.output_unit_directory:
