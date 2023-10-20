@@ -223,15 +223,15 @@ def main():  # pragma: no cover
     if args.output_devices:
         display_content["devices"] = list(repo_manifest.app.devices)
     if args.output_unit_directory:
-        if repo_manifest.tests is None or repo_manifest.test.unit_directory is None:
+        if repo_manifest.tests is None or repo_manifest.tests.unit_directory is None:
             logging.error("This manifest does not contains the 'tests.unit_directory' field")
             sys.exit(2)
         display_content["unit_directory"] = repo_manifest.tests.unit_directory
     if args.output_pytest_directory:
-        if repo_manifest.tests is None or repo_manifest.test.pytest_directory is None:
+        if repo_manifest.tests is None or repo_manifest.tests.pytest_directory is None:
             logging.error("This manifest does not contains the 'tests.pytest_directory' field")
             sys.exit(2)
-        display_content["pytest_directory"] = repo_manifest.test.pytest_directory
+        display_content["pytest_directory"] = repo_manifest.tests.pytest_directory
 
     # only one line to display, or several
     if len(display_content) == 1:
