@@ -58,11 +58,22 @@ class TestTestsConfig(TestCase):
 class TestRepoManifest(TestCase):
 
     def test_from_path(self):
+        manifest = TEST_MANIFEST_DIRECTORY
+        self.assertIsInstance(DummyRepoManifest.from_path(manifest), Manifest)
+
         manifest = TEST_MANIFEST_DIRECTORY / "ledger_app.toml"
         self.assertIsInstance(DummyRepoManifest.from_path(manifest), Manifest)
 
         legacy = TEST_MANIFEST_DIRECTORY / "legacy" / "ledger_app.toml"
         self.assertIsInstance(DummyRepoManifest.from_path(legacy), LegacyManifest)
+
+    def test_from_io(self):
+        with (TEST_MANIFEST_DIRECTORY / "ledger_app.toml").open() as io:
+            self.assertIsInstance(DummyRepoManifest.from_io(io), Manifest)
+
+    def test_from_path_nok(self):
+        with self.assertRaises(AssertionError):
+            RepoManifest.from_path(Path("/not/existing/path"))
 
 
 class TestManifest(TestCase):
