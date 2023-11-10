@@ -12,3 +12,7 @@ This repository aims at regrouping three other somehow similar yet different rep
 
 It will also contain libraries, utilitaries and other snippets useful when interfacing with Ledger
 devices (NanoS, S+, X and Stax).
+
+## Library sections
+
+- [`ledger.utils.manifest` ](doc/utils/manifest.md)
