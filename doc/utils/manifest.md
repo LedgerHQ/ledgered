@@ -1,6 +1,6 @@
 # Manifest
 
-Ledger embedded application can provide a manifest at the root of the repository, under the form of
+Ledger embedded application must provide a manifest at the root of the repository, under the form of
 a `ledger_app.toml` [TOML](https://toml.io/) file.
 This manifest contains application metadata such as build directory, compatible devices and such,
 and is used by several tools to know how to build or test the application.
@@ -66,7 +66,6 @@ The impacted workflows and the manifest field / workflow input relations are the
 
 | `ledger_app.toml` field | workflow input           | Effect                                                           |
 |-------------------------|--------------------------|------------------------------------------------------------------|
-| `build_directory`       | `relative_app_directory` | `build_directory` takes precedence over `relative_app_directory` |
 | `devices`               | `run_for_devices`        | `devices` is overridden by `run_for_devices`                     |
 
 
@@ -74,7 +73,6 @@ The impacted workflows and the manifest field / workflow input relations are the
 
 | `ledger_app.toml` field | workflow input           | Effect                                                           |
 |-------------------------|--------------------------|------------------------------------------------------------------|
-| `build_directory`       | `relative_app_directory` | `build_directory` takes precedence over `relative_app_directory` |
 | `devices`               | `run_for_devices`        | `devices` is overridden by `run_for_devices`                     |
 
 
@@ -82,7 +80,6 @@ The impacted workflows and the manifest field / workflow input relations are the
 
 | `ledger_app.toml` field | workflow input           | Effect                                                           |
 |-------------------------|--------------------------|------------------------------------------------------------------|
-| `build_directory`       | `relative_app_directory` | `build_directory` takes precedence over `relative_app_directory` |
 | `devices`               | `run_for_devices`        | `devices` is overridden by `run_for_devices`                     |
 | `pytest_directory`      | `test_dir`               | `pytest_directory` takes precedence over `test_dir`              |
 
