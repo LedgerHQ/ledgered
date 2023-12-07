@@ -42,6 +42,9 @@ Home = "https://github.com/LedgerHQ/ledgered"
 [project.scripts]
 ledger-manifest = "ledgered.utils.manifest:main"
 
+[tool.setuptools.package-data]
+"ledgered" = ["utils/bip/data/*.txt"]
+
 [tool.setuptools_scm]
 write_to = "src/ledgered/__version__.py"
 local_scheme = "no-local-version"
@@ -49,6 +52,11 @@ local_scheme = "no-local-version"
 [tool.mypy]
 ignore_missing_imports = true
 
+[tool.coverage.run]
+omit = [
+    "*/ledgered/__init__.py",
+    "*/ledgered/__version__.py"
+    ]
 [tool.yapf]
 based_on_style = "pep8"
 column_limit = 100

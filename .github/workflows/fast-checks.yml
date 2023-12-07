@@ -61,3 +61,4 @@ jobs:
       with:
         builtin: clear,rare
         check_filenames: true
+        skip: ./src/ledgered/utils/bip/data/*.txt,
