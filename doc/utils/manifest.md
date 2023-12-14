@@ -27,6 +27,7 @@ pytest_directory = "./tests/"
 
 [build_options]
 debug = "DEBUG=1"
+test = "DEBUG=1"
 ```
 
 ### Sections
@@ -54,13 +55,37 @@ This section is optional. It contains metadata used to run application tests.
 
 This section is optional. It contains metadata helping select build options depending on use cases
 
-| Field name   | Description |
-|--------------|-------------|
-| `<use_case>` | `OPTIONS`   |
+| Field name   | Description                                                             |
+|--------------|-------------------------------------------------------------------------|
+| `<use_case>` | `OPTIONS` (ENV variables for C apps, cargo build options for Rust apps) |
 
 This specify that in order to build for `<use_case>`, the `OPTIONS` must be provided in the build command line.
 This is used for example in the VSCode extension to provide alternative build targets.
+For seamless integration with our tooling environment, defining the following use_cases is greatly recommended:
+```
+debug
+test
+```
+You are free to add any use case you wish to have a VSCode build target for.
 
+#### `[test_dependencies]`
+
+This section is optional. It contains metadata helping selecting build options for apps needed for your tests.
+This is mostly used for Ethereum plugins, that need the Ethereum application compiled with test flags in order to test the plugin.
+
+| Field name   | Description                                                                                          |
+|--------------|------------------------------------------------------------------------------------------------------|
+| `<appname>` | `[<use_case_to_build_the_dependency_with>, ./path_where_the_compiled_dependency_should_be_copied_to]` |
+
+This specify that in order to run the tests, the `appname` application should be compiled with its `use_case` and the resulting build
+should be copied in the specified path.
+This is used for example in the VSCode extension to build and copy test dependencies.
+
+Example for Ethereum plugins:
+```toml
+[test_dependencies]
+ethereum = ["test", "./tests/ethereum_build/"]
+```
 
 ### Relations with the [reusable workflows](https://github.com/LedgerHQ/ledger-app-workflows/)
 
