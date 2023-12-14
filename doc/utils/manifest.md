@@ -24,6 +24,9 @@ devices = ["nanos", "nanox", "nanos+", "stax"]
 [tests]
 unit_directory = "./unit-tests/"
 pytest_directory = "./tests/"
+
+[build_options]
+debug = "DEBUG=1"
 ```
 
 ### Sections
@@ -46,6 +49,17 @@ This section is optional. It contains metadata used to run application tests.
 |--------------------|------------------------------------------------------------------------------------------------|
 | `unit_directory`   | Path of the directory where unit tests can be found                                            |
 | `pytest_directory` | Path of the directory where functional, Python test can be found (`conftest.py` file expected) |
+
+#### `[build_options]`
+
+This section is optional. It contains metadata helping select build options depending on use cases
+
+| Field name   | Description |
+|--------------|-------------|
+| `<use_case>` | `OPTIONS`   |
+
+This specify that in order to build for `<use_case>`, the `OPTIONS` must be provided in the build command line.
+This is used for example in the VSCode extension to provide alternative build targets.
 
 
 ### Relations with the [reusable workflows](https://github.com/LedgerHQ/ledger-app-workflows/)
