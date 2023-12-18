@@ -57,9 +57,9 @@ This section is optional. It contains metadata helping select build options depe
 
 | Field name   | Description                                                             |
 |--------------|-------------------------------------------------------------------------|
-| `<use_case>` | `OPTIONS` (ENV variables for C apps, cargo build options for Rust apps) |
+| `<use_case>` | Options string : <ul><li>Environment variables definitions for C apps (e.g. `DEBUG=1`)</li><li>Valid Cargo build options for Rust apps (e.g. `--outdir mydir`)</li></ul> |
 
-This specify that in order to build for `<use_case>`, the `OPTIONS` must be provided in the build command line.
+This specify that in order to build for `<use_case>`, the options string must be provided in the build command line.
 This is used for example in the VSCode extension to provide alternative build targets.
 For seamless integration with our tooling environment, defining the following use_cases is greatly recommended:
 ```
