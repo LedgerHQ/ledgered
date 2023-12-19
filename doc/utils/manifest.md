@@ -24,6 +24,10 @@ devices = ["nanos", "nanox", "nanos+", "stax"]
 [tests]
 unit_directory = "./unit-tests/"
 pytest_directory = "./tests/"
+
+[build_options]
+debug = "DEBUG=1"
+test = "DEBUG=1"
 ```
 
 ### Sections
@@ -47,6 +51,41 @@ This section is optional. It contains metadata used to run application tests.
 | `unit_directory`   | Path of the directory where unit tests can be found                                            |
 | `pytest_directory` | Path of the directory where functional, Python test can be found (`conftest.py` file expected) |
 
+#### `[build_options]`
+
+This section is optional. It contains metadata helping select build options depending on use cases
+
+| Field name   | Description                                                             |
+|--------------|-------------------------------------------------------------------------|
+| `<use_case>` | Options string : <ul><li>Environment variables definitions for C apps (e.g. `DEBUG=1`)</li><li>Valid Cargo build options for Rust apps (e.g. `--outdir mydir`)</li></ul> |
+
+This specify that in order to build for `<use_case>`, the options string must be provided in the build command line.
+This is used for example in the VSCode extension to provide alternative build targets.
+For seamless integration with our tooling environment, defining the following use_cases is greatly recommended:
+```
+debug
+test
+```
+You are free to add any use case you wish to have a VSCode build target for.
+
+#### `[test_dependencies]`
+
+This section is optional. It contains metadata helping selecting build options for apps needed for your tests.
+This is mostly used for Ethereum plugins, that need the Ethereum application compiled with test flags in order to test the plugin.
+
+| Field name | Description                                                                                            |
+|------------|--------------------------------------------------------------------------------------------------------|
+| `<name>`   | `[<app_repo_name>, <use_case_to_build_this_dependency_with>, ./path_where_the_compiled_dependency_should_be_copied_to]` |
+
+This specify that in order to run the tests, the `name` build application should be compiled with its `use_case` and the resulting build
+should be copied in the specified path.
+This is used for example in the VSCode extension to build and copy test dependencies.
+
+Example for Ethereum plugins:
+```toml
+[test_dependencies]
+ethereum = ["app-ethereum", "test", "./tests/ethereum_build/"]
+```
 
 ### Relations with the [reusable workflows](https://github.com/LedgerHQ/ledger-app-workflows/)
 
