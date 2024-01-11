@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.0] - 2024-01-??
 
+### Added
+
+- Dedicated logger for the `manifest` subpackage.
+
 ### Changed
 
-- BREAKING: moving the `utils/manifest.py` module into its own `manifest/` module.
+- BREAKING: moving the `utils/manifest.py` module into its own `manifest/` subpackage.
 
 ## [0.3.0] - 2023-10-30
 

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .constants import MANIFEST_FILE_NAME
 from .manifest import Manifest, LegacyManifest
+from .utils import getLogger
 
 
 def parse_args() -> Namespace:  # pragma: no cover
@@ -69,15 +70,16 @@ def parse_args() -> Namespace:  # pragma: no cover
 
 
 def main():  # pragma: no cover
+    logger = getLogger()
     args = parse_args()
     assert args.manifest.is_file(), f"'{args.manifest.resolve()}' does not appear to be a file."
     manifest = args.manifest.resolve()
 
     # verbosity
     if args.verbose == 1:
-        logging.root.setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)
     elif args.verbose > 1:
-        logging.root.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
 
     # compatibility check: legacy manifest cannot display sdk, devices, unit/pytest directory
     if args.legacy and (args.output_sdk or args.output_devices or args.output_devices
@@ -86,21 +88,21 @@ def main():  # pragma: no cover
 
     # parsing the manifest
     if args.legacy:
-        logging.info("Expecting a legacy manifest")
+        logger.info("Expecting a legacy manifest")
         manifest_cls = LegacyManifest
     else:
-        logging.info("Expecting a classic manifest")
+        logger.info("Expecting a classic manifest")
         manifest_cls = Manifest
     repo_manifest = manifest_cls.from_path(manifest)
 
     # check directory path against manifest data
     if args.check is not None:
-        logging.info("Checking the manifest")
+        logger.info("Checking the manifest")
         repo_manifest.check(args.check)
         return
 
     # no check
-    logging.info("Displaying manifest info")
+    logger.info("Displaying manifest info")
     display_content = dict()
 
     # build_directory can be 'deduced' from legacy manifest
@@ -117,12 +119,12 @@ def main():  # pragma: no cover
         display_content["devices"] = list(repo_manifest.app.devices)
     if args.output_unit_directory:
         if repo_manifest.tests is None or repo_manifest.tests.unit_directory is None:
-            logging.error("This manifest does not contains the 'tests.unit_directory' field")
+            logger.error("This manifest does not contains the 'tests.unit_directory' field")
             sys.exit(2)
         display_content["unit_directory"] = repo_manifest.tests.unit_directory
     if args.output_pytest_directory:
         if repo_manifest.tests is None or repo_manifest.tests.pytest_directory is None:
-            logging.error("This manifest does not contains the 'tests.pytest_directory' field")
+            logger.error("This manifest does not contains the 'tests.pytest_directory' field")
             sys.exit(2)
         display_content["pytest_directory"] = repo_manifest.tests.pytest_directory
 
