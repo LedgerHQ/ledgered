@@ -3,8 +3,7 @@ from unittest import TestCase
 
 from ledgered.manifest.manifest import LegacyManifest, Manifest, RepoManifest, MANIFEST_FILE_NAME
 
-
-TEST_MANIFEST_DIRECTORY = Path(__file__).parent.parent / "_data"
+from .. import TEST_MANIFEST_DIRECTORY
 
 
 class DummyRepoManifest(RepoManifest):

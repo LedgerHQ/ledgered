@@ -2,16 +2,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from .utils import getLogger
+from .constants import DEFAULT_USE_CASE
 from .types import Jsonable, JsonDict, JsonSet
+from .utils import getLogger
 
 
-class DuplicateDependency(ValueError):
+class DuplicateDependencyError(ValueError):
     pass
 
 
 @dataclass
-class TestDependencyConfig(Jsonable):
+class TestsDependencyConfig(Jsonable):
+    __test__ = False  # deactivate pytest discovery warning
+
     url: str
     ref: str
     use_case: Optional[str]
@@ -19,33 +22,37 @@ class TestDependencyConfig(Jsonable):
     def __init__(self, url: str, ref: str, use_case: Optional[str] = None) -> None:
         self.url = url
         self.ref = ref
-        self.use_case = use_case or "default"
+        self.use_case = use_case or DEFAULT_USE_CASE
 
     @property
     def dir(self):
         return f"{self.url}-{self.ref}-{self.use_case}"
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(object, TestDependencyConfig):
+        if not isinstance(other, TestsDependencyConfig):
             return False
+        print(self.dir)
+        print(other.dir)
         return self.dir == other.dir
 
     def __hash__(self) -> int:
-        return int.from_bytes(self.dir.encode(), "big")
+        return hash((self.url, self.ref, self.use_case))
 
 
 @dataclass
-class TestDependenciesConfig(Jsonable):
+class TestsDependenciesConfig(Jsonable):
+    __test__ = False  # deactivate pytest discovery warning
+
     dependencies: JsonSet
 
     def __init__(self, dependencies: List[Dict]) -> None:
         logger = getLogger()
         self.dependencies = JsonSet()
         for dep in dependencies:
-            dependency = TestDependencyConfig(**dep)
+            dependency = TestsDependencyConfig(**dep)
             if dependency in self.dependencies:
                 logger.error("Dependency duplication!")
-                raise DuplicateDependency(dependency)
+                raise DuplicateDependencyError(dependency)
             self.dependencies.add(dependency)
             logger.debug("Dependency %s added", dependency)
 
@@ -76,4 +83,4 @@ class TestsConfig(Jsonable):
             self.dependencies = JsonDict()
             for key, value in dependencies.items():
                 logger.info("Parsing dependencies for '%s' tests", key)
-                self.dependencies[key] = TestDependenciesConfig(value)
+                self.dependencies[key] = TestsDependenciesConfig(value)

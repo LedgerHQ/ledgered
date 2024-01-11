@@ -1,16 +1,20 @@
 from typing import Any, Dict, List, Union
 
 
+def to_str_int(value: Any) -> Union[int, str]:
+    return str(value) if not isinstance(value, int) else value
+
+
 class Jsonable:
 
     @property
     def json(self) -> Union[Dict, List]:
-        output: Dict[str, Any] = dict()
+        output: Dict[Union[str, int], Any] = dict()
         for key, value in self.__dict__.items():
             if isinstance(value, Jsonable):
                 output[key] = value.json
             else:
-                output[key] = str(value)
+                output[key] = to_str_int(value)
         return output
 
 
@@ -23,7 +27,7 @@ class JsonList(list, Jsonable):
             if isinstance(element, Jsonable):
                 output.append(element.json)
             else:
-                output.append(str(element))
+                output.append(to_str_int(element))
         return output
 
 
@@ -36,7 +40,7 @@ class JsonSet(set, Jsonable):
             if isinstance(element, Jsonable):
                 output.append(element.json)
             else:
-                output.append(str(element))
+                output.append(to_str_int(element))
         return output
 
 
@@ -44,10 +48,10 @@ class JsonDict(dict, Jsonable):
 
     @property
     def json(self) -> Dict:
-        output: Dict[str, Any] = dict()
+        output: Dict[Union[str, int], Any] = dict()
         for key, value in self.items():
             if isinstance(value, Jsonable):
                 output[key] = value.json
             else:
-                output[key] = str(value)
+                output[key] = to_str_int(value)
         return output
