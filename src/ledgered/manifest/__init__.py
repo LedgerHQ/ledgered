@@ -4,5 +4,5 @@ from .manifest import LegacyManifest, Manifest
 from .tests import TestsConfig
 
 
-__all__ = ["AppConfig", "EXISTING_DEVICES", "LegacyManifest", "Manifest", "MANIFEST_FILE_NAME", \
+__all__ = ["AppConfig", "EXISTING_DEVICES", "LegacyManifest", "Manifest", "MANIFEST_FILE_NAME",
            "TestsConfig"]

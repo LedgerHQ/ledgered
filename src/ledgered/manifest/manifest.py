@@ -8,10 +8,11 @@ from typing import Dict, IO, Optional, Union
 from .app import AppConfig
 from .constants import MANIFEST_FILE_NAME
 from .tests import TestsConfig
+from .types import Jsonable
 from .use_cases import UseCasesConfig
 
 
-class RepoManifest(ABC):
+class RepoManifest(ABC, Jsonable):
 
     @abstractmethod
     def check(self, directory: Union[str, Path]) -> None:

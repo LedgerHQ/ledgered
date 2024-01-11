@@ -3,13 +3,14 @@ from pathlib import Path
 from typing import Iterable, Set, Union
 
 from .constants import EXISTING_DEVICES
+from .types import Jsonable, JsonSet
 
 
 @dataclass
-class AppConfig:
+class AppConfig(Jsonable):
     sdk: str
     build_directory: Path
-    devices: Set[str]
+    devices: JsonSet[str]
 
     def __init__(self, sdk: str, build_directory: Union[str, Path], devices: Iterable[str]) -> None:
         sdk = sdk.lower()
@@ -17,7 +18,7 @@ class AppConfig:
             raise ValueError(f"'{sdk}' unknown. Must be either 'C' or 'Rust'")
         self.sdk = sdk
         self.build_directory = Path(build_directory)
-        devices = {device.lower() for device in devices}
+        devices = JsonSet(device.lower() for device in devices)
         unknown_devices = devices.difference(EXISTING_DEVICES)
         if unknown_devices:
             unknown_devices_str = "', '".join(unknown_devices)

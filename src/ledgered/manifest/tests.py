@@ -1,15 +1,15 @@
-import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Union
 
 from .utils import getLogger
+from .types import Jsonable, JsonDict, JsonSet
 
 class DuplicateDependency(ValueError): pass
 
 
 @dataclass
-class TestDependencyConfig:
+class TestDependencyConfig(Jsonable):
     url: str
     ref: str
     use_case: Optional[str]
@@ -29,13 +29,14 @@ class TestDependencyConfig:
     def __hash__(self) -> int:
         return int.from_bytes(self.dir.encode(), "big")
 
+
 @dataclass
-class TestDependenciesConfig:
-    dependencies: Set[TestDependencyConfig]
+class TestDependenciesConfig(Jsonable):
+    dependencies: JsonSet[TestDependencyConfig]
 
     def __init__(self, dependencies: List[Dict]) -> None:
         logger = getLogger()
-        self.dependencies = set()
+        self.dependencies = JsonSet()
         for dep in dependencies:
             dependency = TestDependencyConfig(**dep)
             if dependency in self.dependencies:
@@ -44,14 +45,17 @@ class TestDependenciesConfig:
             self.dependencies.add(dependency)
             logger.debug("Dependency %s added", dependency)
 
+    @property
+    def json(self):
+        return self.dependencies.json
 
 @dataclass
-class TestsConfig:
+class TestsConfig(Jsonable):
     __test__ = False  # deactivate pytest discovery warning
 
     unit_directory: Optional[Path]
     pytest_directory: Optional[Path]
-    test_dependencies: Optional[Dict[str, TestDependenciesConfig]]
+    dependencies: Optional[JsonDict[str, TestDependenciesConfig]]
 
     def __init__(self,
                  unit_directory: Optional[Union[str, Path]] = None,
@@ -62,9 +66,9 @@ class TestsConfig:
         self.unit_directory = None if unit_directory is None else Path(unit_directory)
         self.pytest_directory = None if pytest_directory is None else Path(pytest_directory)
         if dependencies is None:
-            self.test_dependencies = None
+            self.dependencies = None
         else:
-            self.test_dependencies = dict()
+            self.dependencies = JsonDict()
             for key, value in dependencies.items():
                 logger.info("Parsing dependencies for '%s' tests", key)
-                self.test_dependencies[key] = TestDependenciesConfig(value)
+                self.dependencies[key] = TestDependenciesConfig(value)

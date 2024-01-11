@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 __logger__ = None
 DEFAULT_FORMAT = '[%(asctime)s][%(levelname)s] %(name)s - %(message)s'
