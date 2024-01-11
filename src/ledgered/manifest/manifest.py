@@ -8,6 +8,7 @@ from typing import Dict, IO, Optional, Union
 from .app import AppConfig
 from .constants import MANIFEST_FILE_NAME
 from .tests import TestsConfig
+from .use_cases import UseCasesConfig
 
 
 class RepoManifest(ABC):
@@ -42,10 +43,14 @@ class RepoManifest(ABC):
 class Manifest(RepoManifest):
     app: AppConfig
     tests: Optional[TestsConfig]
+    use_cases: Optional[UseCasesConfig]
 
-    def __init__(self, app: Dict, tests: Optional[Dict] = None) -> None:
+    def __init__(self, app: Dict,
+                 tests: Optional[Dict] = None,
+                 use_cases: Optional[Dict] = None) -> None:
         self.app = AppConfig(**app)
         self.tests = None if tests is None else TestsConfig(**tests)
+        self.use_cases = None if use_cases is None else UseCasesConfig(**use_cases)
 
     @classmethod
     def from_string(cls, content: str) -> "Manifest":

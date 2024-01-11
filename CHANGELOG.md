@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Dedicated logger for the `manifest` subpackage.
+- `manifest` can now manage `use_cases` and `tests.dependencies`
 
 ### Changed
 
