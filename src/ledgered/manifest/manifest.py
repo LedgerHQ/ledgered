@@ -46,7 +46,8 @@ class Manifest(RepoManifest):
     tests: Optional[TestsConfig]
     use_cases: Optional[UseCasesConfig]
 
-    def __init__(self, app: Dict,
+    def __init__(self,
+                 app: Dict,
                  tests: Optional[Dict] = None,
                  use_cases: Optional[Dict] = None) -> None:
         self.app = AppConfig(**app)

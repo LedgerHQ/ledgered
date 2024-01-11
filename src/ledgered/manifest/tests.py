@@ -5,7 +5,9 @@ from typing import Dict, List, Optional, Union
 from .utils import getLogger
 from .types import Jsonable, JsonDict, JsonSet
 
-class DuplicateDependency(ValueError): pass
+
+class DuplicateDependency(ValueError):
+    pass
 
 
 @dataclass
@@ -23,7 +25,9 @@ class TestDependencyConfig(Jsonable):
     def dir(self):
         return f"{self.url}-{self.ref}-{self.use_case}"
 
-    def __eq__(self, other: "TestDependencyConfig") -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(object, TestDependencyConfig):
+            return False
         return self.dir == other.dir
 
     def __hash__(self) -> int:
@@ -32,7 +36,7 @@ class TestDependencyConfig(Jsonable):
 
 @dataclass
 class TestDependenciesConfig(Jsonable):
-    dependencies: JsonSet[TestDependencyConfig]
+    dependencies: JsonSet
 
     def __init__(self, dependencies: List[Dict]) -> None:
         logger = getLogger()
@@ -49,13 +53,14 @@ class TestDependenciesConfig(Jsonable):
     def json(self):
         return self.dependencies.json
 
+
 @dataclass
 class TestsConfig(Jsonable):
     __test__ = False  # deactivate pytest discovery warning
 
     unit_directory: Optional[Path]
     pytest_directory: Optional[Path]
-    dependencies: Optional[JsonDict[str, TestDependenciesConfig]]
+    dependencies: Optional[JsonDict]
 
     def __init__(self,
                  unit_directory: Optional[Union[str, Path]] = None,

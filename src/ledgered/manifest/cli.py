@@ -4,11 +4,12 @@ import sys
 from argparse import ArgumentParser, Namespace
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterable
+from typing import Dict
 
 from .constants import MANIFEST_FILE_NAME
 from .manifest import Manifest, LegacyManifest
 from .utils import getLogger
+
 
 def text_output(content: Dict, indent: int = 0) -> None:
     if indent == 0 and len(content) == 1:
@@ -21,18 +22,17 @@ def text_output(content: Dict, indent: int = 0) -> None:
     for key, value in content.items():
         if isinstance(value, dict):
             print(f"{' ' * 2 * indent}{key}:")
-            text_output(value, indent=indent+1)
+            text_output(value, indent=indent + 1)
         elif isinstance(value, (list, set, tuple)):
             print(f"{' ' * 2 * indent}{key}:")
             for i, element in enumerate(value):
                 if isinstance(element, dict):
                     print(f"{' ' * (2 * indent + 1)}{i}.")
-                    text_output(element, indent=indent+1)
+                    text_output(element, indent=indent + 1)
                 else:
                     print(f"{' ' * 2 * indent}{i}. {element}")
         else:
             print(f"{' ' * 2 * indent}{key}: {value}")
-
 
 
 def parse_args() -> Namespace:  # pragma: no cover
@@ -111,7 +111,7 @@ def parse_args() -> Namespace:  # pragma: no cover
                         "--json",
                         required=False,
                         action="store_true",
-                        help="ouputs as JSON rather than text")
+                        help="outputs as JSON rather than text")
     return parser.parse_args()
 
 
@@ -178,7 +178,10 @@ def main():  # pragma: no cover
         dependencies = repo_manifest.tests.dependencies.json
         non_empty = len(dependencies) > 0
         if len(args.output_tests_dependencies) != 0:
-            dependencies = {k: v for (k, v) in dependencies.items() if k in args.output_tests_dependencies}
+            dependencies = {
+                k: v
+                for (k, v) in dependencies.items() if k in args.output_tests_dependencies
+            }
         if not len(dependencies) and non_empty:
             logger.error("No use case match these ones: '%s'", args.outputd_tests_ependencies)
             sys.exit(2)
@@ -195,7 +198,7 @@ def main():  # pragma: no cover
             sys.exit(2)
         display_content["tests"]["pytest_directory"] = str(repo_manifest.tests.pytest_directory)
 
-    # cropping down to the latest dict, if previouses only has 1 key so that the ouput (either text
+    # cropping down to the latest dict, if previouses only has 1 key so that the output (either text
     # or JSON) is the smallest possible
     while True:
         if len(display_content) == 1:

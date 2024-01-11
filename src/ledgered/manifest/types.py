@@ -1,11 +1,11 @@
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 
 class Jsonable:
 
     @property
     def json(self) -> Union[Dict, List]:
-        output = dict()
+        output: Dict[str, Any] = dict()
         for key, value in self.__dict__.items():
             if isinstance(value, Jsonable):
                 output[key] = value.json
@@ -18,7 +18,7 @@ class JsonList(list, Jsonable):
 
     @property
     def json(self) -> List:
-        output = list()
+        output: List[Any] = list()
         for element in self:
             if isinstance(element, Jsonable):
                 output.append(element.json)
@@ -31,7 +31,7 @@ class JsonSet(set, Jsonable):
 
     @property
     def json(self) -> List:
-        output = list()
+        output: List[Any] = list()
         for element in self:
             if isinstance(element, Jsonable):
                 output.append(element.json)
@@ -44,7 +44,7 @@ class JsonDict(dict, Jsonable):
 
     @property
     def json(self) -> Dict:
-        output = dict()
+        output: Dict[str, Any] = dict()
         for key, value in self.items():
             if isinstance(value, Jsonable):
                 output[key] = value.json

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Set, Union
+from typing import Iterable, Union
 
 from .constants import EXISTING_DEVICES
 from .types import Jsonable, JsonSet
@@ -10,7 +10,7 @@ from .types import Jsonable, JsonSet
 class AppConfig(Jsonable):
     sdk: str
     build_directory: Path
-    devices: JsonSet[str]
+    devices: JsonSet
 
     def __init__(self, sdk: str, build_directory: Union[str, Path], devices: Iterable[str]) -> None:
         sdk = sdk.lower()
