@@ -21,13 +21,19 @@ build_directory = "./"
 sdk = "C"
 devices = ["nanos", "nanox", "nanos+", "stax"]
 
+[use_cases]
+debug = "DEBUG=1"
+test = "DEBUG=1"
+
 [tests]
 unit_directory = "./unit-tests/"
 pytest_directory = "./tests/"
 
-[use_cases]
-debug = "DEBUG=1"
-test = "DEBUG=1"
+[tests.dependencies]
+testing_develop = [
+  { url = "https://github.com/<owner>/<app-repository>", ref = "develop", use_case = "debug" },
+  { url = "https://github.com/<owner>/<other-app-repository>", ref = "develop" },
+]
 ```
 
 ### Sections
@@ -42,6 +48,28 @@ This section and all its fields are required. It contains metadata helping to bu
 | `build_directory` | Path of the build directory (i.e the directory where the `Makefile` or `Cargo.toml` file can be found) |
 | `devices`         | The list of devices on which the application can be built.                                             |
 
+#### `[use_cases]`
+
+This section is optional. It contains metadata helping select build options depending on use cases
+The VSCode extension leverages this section to provide alternative build targets.
+
+| Field name   | Description                                                             |
+|--------------|-------------------------------------------------------------------------|
+| `<use_case>` | Options string: <ul><li>Environment variables definitions for C applications (e.g. `DEBUG=1`)</li><li>Valid Cargo build options for Rust applications (e.g. `--outdir mydir`)</li></ul> |
+
+This specifies that in order to build for `<use_case>`, the options string must be provided in the build command line.
+You are free to add any use case you wish to have a VSCode build target for.
+> [!WARNING]
+> The use case `"default"` refers to a standard build with no option. It is implicit and can't be redefined.
+
+Example:
+```
+[use_cases] # Coherent build options that make sense for your application
+debug = "DEBUG=1"
+test = "TESTING=1 TEST_PUBLIC_KEY=1"
+my_variant = "COIN=MY_VARIANT"
+```
+
 #### `[tests]`
 
 This section is optional. It contains metadata used to run application tests.
@@ -51,49 +79,51 @@ This section is optional. It contains metadata used to run application tests.
 | `unit_directory`   | Path of the directory where unit tests can be found                                            |
 | `pytest_directory` | Path of the directory where functional, Python test can be found (`conftest.py` file expected) |
 
-#### `[use_cases]`
+#### `[tests.dependencies.<test_use_case>]`
 
-This section is optional. It contains metadata helping select build options depending on use cases
-The VSCode extension leverages this section to provide alternative build targets.
-
-| Field name   | Description                                                             |
-|--------------|-------------------------------------------------------------------------|
-| `<use_case>` | Options string : <ul><li>Environment variables definitions for C applications (e.g. `DEBUG=1`)</li><li>Valid Cargo build options for Rust applications (e.g. `--outdir mydir`)</li></ul> |
-
-This specify that in order to build for `<use_case>`, the options string must be provided in the build command line.
-You are free to add any use case you wish to have a VSCode build target for.
-The use case `default` refers to a standard build with no option. It is implicit and can't be redefined.
-
-Example:
-```
-[use_cases] # Coherent build options that make sense for your application
-debug = "DEBUG=1"
-test = "TESTING=1 TEST_PUBLIC_KEY=1"
-```
-
-#### `[test.dependencies.<test_use_case>]`
-
-The test.dependencies.* sections are optional. They contain metadata helping building side applications needed for your tests.
+The tests.dependencies.* sections are optional. They contain a list of apps metadata helping building side applications needed for your tests.
 You can define as many as you need.
 The VSCode extension leverages this field to build test dependencies for Speculos tests or device tests.
 
-| Field name | Description                                                                                       |
-|------------|---------------------------------------------------------------------------------------------------|
-| `[{<url>, <ref>, <use_case>}]` | A table of dependent applications to build for the `<test_use_case>` use case |
+The syntax to describe a single side application is the following:
 
-This specify that in order to prepare for the `test_use_case`, the application located at `<url>` on ref `<ref>` should be compiled with its `<use_case>`.
-Do note that the `<use_case>` is the one of the application refered to, not this application.
+| Field name | Description                                                           |
+|------------|-----------------------------------------------------------------------|
+| `url`      | The URL of the application git repository  |
+| `ref`      | The reference to checkout in the repository |
+| `use_case` | The `use_case` to use to build the application |
+
+This is to be included in a list of applications attached to a particular testing scenario, for instance:
+```toml
+[[tests.dependencies.test_use_case]]
+url = <url>
+ref = <ref>
+use_case = <use_case>
+```
+This specifies that the `test_use_case` scenario needs the application located at `<url>` on ref `<ref>` and should be built according to its `<use_case>`.
+
+This following syntax can be used, as it is lighter and equivalent to the previous one:
+```toml
+[tests.dependencies]
+test_use_case = [{url = <url>, ref = <ref>, use_case = <use_case>}]
+```
+
+> [!NOTE]
+> The `<use_case>` is the one of the application referred to, not to this manifest's application. Hence it must be defined on the other application own manifest (or be `"default"`)
+
+> [!NOTE]
+> The `<use_case>` is optional, and will fallback to `use_case = "default"` if non present.
 
 Example for an Ethereum plugin that needs the Ethereum application sideloaded on the device:
 ```toml
 [tests.dependencies] # Set of applications to load on the device (or Speculos) for a given test suite
 
 testing_with_prod = [
-  {url = "https://github.com/LedgerHQ/app-ethereum", ref = "master", use_case = "default"},
+  {url = "https://github.com/LedgerHQ/app-ethereum", ref = "master", use_case = "cal_key_debug"},
 ]
 
 testing_with_latest = [
-  {url = "https://github.com/LedgerHQ/app-ethereum", ref = "develop", use_case = "default"},
+  {url = "https://github.com/LedgerHQ/app-ethereum", ref = "develop", use_case = "cal_key_debug"},
 ]
 
 ```
