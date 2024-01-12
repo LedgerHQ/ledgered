@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict
@@ -35,7 +35,7 @@ def text_output(content: Dict, indent: int = 0) -> None:
             print(f"{' ' * 2 * indent}{key}: {value}")
 
 
-def parse_args() -> Namespace:  # pragma: no cover
+def set_parser() -> ArgumentParser:
     parser = ArgumentParser(prog="ledger-manifest",
                             description="Utilitary to parse and check an application "
                             "'ledger_app.toml' manifest")
@@ -112,12 +112,12 @@ def parse_args() -> Namespace:  # pragma: no cover
                         required=False,
                         action="store_true",
                         help="outputs as JSON rather than text")
-    return parser.parse_args()
+    return parser
 
 
 def main():  # pragma: no cover
     logger = getLogger()
-    args = parse_args()
+    args = set_parser().parse_args()
     assert args.manifest.is_file(), f"'{args.manifest.resolve()}' does not appear to be a file."
     manifest = args.manifest.resolve()
 
@@ -183,7 +183,7 @@ def main():  # pragma: no cover
                 for (k, v) in dependencies.items() if k in args.output_tests_dependencies
             }
         if not len(dependencies) and non_empty:
-            logger.error("No use case match these ones: '%s'", args.outputd_tests_ependencies)
+            logger.error("No use case match these ones: '%s'", args.output_tests_dependencies)
             sys.exit(2)
         display_content["tests"]["dependencies"] = dependencies
 

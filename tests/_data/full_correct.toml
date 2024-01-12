@@ -1,0 +1,18 @@
+[app]
+build_directory = "./"
+sdk = "C"
+devices = ["nanox"]
+
+[use_cases]
+debug = "DEBUG=1"
+test = "DEBUG=1"
+
+[tests]
+unit_directory = "./tests/unit/"
+pytest_directory = "./tests/functional/"
+
+[tests.dependencies]
+testing_develop = [
+  { url = "https://github.com/<owner>/<app-repository>", ref = "develop", use_case = "debug" },
+  { url = "https://github.com/<owner>/<other-app-repository>", ref = "develop" }
+]
