@@ -15,14 +15,17 @@ on:
     paths:
       - src
       - tests
+      - .github/workflows/build_and_tests.yml
 
 jobs:
 
   build_install_test:
     name: Build, install and test the Ledgered Python package
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ['3.8', '3.9', '3.10', '3.11']
     steps:
-
     - name: Clone
       uses: actions/checkout@v3
 
