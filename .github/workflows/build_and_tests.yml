@@ -29,6 +29,11 @@ jobs:
     - name: Clone
       uses: actions/checkout@v4
 
+    - name: Setup Python version
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python_version }}
+
     - name: Build & install
       run: |
         pip install -U pip
