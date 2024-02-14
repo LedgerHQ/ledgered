@@ -11,6 +11,9 @@ class Jsonable:
     def json(self) -> Union[Dict, List]:
         output: Dict[Union[str, int], Any] = dict()
         for key, value in self.__dict__.items():
+            if key.startswith('_'):
+                # 'hidden' properties are not to be included into the output
+                continue
             if isinstance(value, Jsonable):
                 output[key] = value.json
             else:

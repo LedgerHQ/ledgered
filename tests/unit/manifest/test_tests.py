@@ -3,56 +3,65 @@ from unittest import TestCase
 
 from ledgered.manifest.constants import DEFAULT_USE_CASE
 from ledgered.manifest.tests import DuplicateDependencyError, TestsConfig, TestsDependencyConfig, \
-    TestsDependenciesConfig
+    TestsDependenciesConfig, APPLICATION_DIRECTORY_KEY, APPLICATION_DIRECTORY_NAME
 
 
 class TestTestsDependencyConfig(TestCase):
 
     def setUp(self):
-        self.u, self.r, self.uc = "url", "ref", "use_case"
-        self.tdc = TestsDependencyConfig(self.u, self.r, self.uc)
+        self.n, self.r, self.bd, self.uc = "name", "ref", Path("base_dir"), "use_case"
+        self.url = "/".join(["some url", self.n])
+        self.tdc = TestsDependencyConfig(self.url, self.r, self.bd, self.uc)
 
     def test___init__full(self):
-        self.assertEqual(self.tdc.url, self.u)
+        self.assertEqual(self.tdc.url, self.url)
         self.assertEqual(self.tdc.ref, self.r)
         self.assertEqual(self.tdc.use_case, self.uc)
+        self.assertEqual(self.tdc._name, self.n)
+        self.assertEqual(self.tdc._base_dir, self.bd)
 
     def test___init__partial(self):
-        tdc = TestsDependencyConfig(self.u, self.r)
-        self.assertEqual(tdc.url, self.u)
+        tdc = TestsDependencyConfig(self.url, self.r, base_dir=self.bd)
+        self.assertEqual(tdc.url, self.url)
         self.assertEqual(tdc.ref, self.r)
+        self.assertEqual(self.tdc._name, self.n)
+        self.assertEqual(self.tdc._base_dir, self.bd)
         self.assertEqual(tdc.use_case, DEFAULT_USE_CASE)
 
     def test_dir(self):
-        self.assertEqual(self.tdc.dir, f"{self.u}-{self.r}-{self.uc}")
+        path = self.bd / APPLICATION_DIRECTORY_NAME / f"{self.n}-{self.r}-{self.uc}"
+        self.assertEqual(self.tdc.dir, path)
 
     def test___eq__(self):
         self.assertNotEqual(self.tdc, str)
-        self.assertEqual(self.tdc, TestsDependencyConfig(self.u, self.r, self.uc))
-        self.assertNotEqual(self.tdc, TestsDependencyConfig(self.u, self.r))
+        self.assertEqual(self.tdc, TestsDependencyConfig(self.url, self.r, self.bd, self.uc))
+        self.assertNotEqual(self.tdc, TestsDependencyConfig(self.url, self.r, self.bd))
 
     def test__hash__(self):
-        self.assertEqual(hash(self.tdc), hash((self.u, self.r, self.uc)))
+        self.assertEqual(hash(self.tdc), hash((self.url, self.r, self.uc)))
 
 
 class TestTestsDependenciesConfig(TestCase):
 
     def setUp(self):
+        self.bd = Path("test")
         self.u1, self.r1, self.uc1 = "url1", "ref1", "use_case1"
         self.u2, self.r2, self.uc2 = "url2", "ref2", "use_case2"
         self.input = [{"url": self.u1, "ref": self.r1, "use_case": self.uc1},
                       {"url": self.u2, "ref": self.r2, "use_case": self.uc2}]
-        self.tdc = TestsDependenciesConfig(self.input)
+        self.tdc = TestsDependenciesConfig(self.input, self.bd)
 
     def test___init__ok(self):
-        self.assertSetEqual(self.tdc.dependencies, {TestsDependencyConfig(self.u1, self.r1, self.uc1),
-                                                    TestsDependencyConfig(self.u2, self.r2, self.uc2)})
+        self.assertSetEqual(self.tdc.dependencies, {TestsDependencyConfig(self.u1, self.r1, self.bd, self.uc1),
+                                                    TestsDependencyConfig(self.u2, self.r2, self.bd, self.uc2)})
 
     def test___init__nok(self):
         with self.assertRaises(DuplicateDependencyError):
-            TestsDependenciesConfig([{"url": self.u1, "ref": self.r1, "use_case": self.uc1}]*2)
+            TestsDependenciesConfig([{"url": self.u1, "ref": self.r1, "use_case": self.uc1}]*2, base_dir="something")
 
     def test_json(self):
+        self.input[0][APPLICATION_DIRECTORY_KEY] = str(self.bd / APPLICATION_DIRECTORY_NAME / f"{self.u1}-{self.r1}-{self.uc1}")
+        self.input[1][APPLICATION_DIRECTORY_KEY] = str(self.bd / APPLICATION_DIRECTORY_NAME / f"{self.u2}-{self.r2}-{self.uc2}")
         # CountEqual rather than ListEqual, as the list is managed as a set and the content can
         # be reordered when serialized back to list
         self.assertCountEqual(self.tdc.json, self.input)
@@ -80,6 +89,9 @@ class TestTestsConfig(TestCase):
         result_json = config.json
         result_deps = result_json.pop("dependencies")
         self.assertEqual(len(result_deps), len(deps))
+        deps["first"][0][APPLICATION_DIRECTORY_KEY] = str(pd / APPLICATION_DIRECTORY_NAME / f"url-ref-default")
+        deps["second"][0][APPLICATION_DIRECTORY_KEY] = str(pd / APPLICATION_DIRECTORY_NAME / f"u1-r1-uc1")
+        deps["second"][1][APPLICATION_DIRECTORY_KEY] = str(pd / APPLICATION_DIRECTORY_NAME / f"u2-r2-uc2")
         for k, v in result_deps.items():
             self.assertIn(k, deps)
             self.assertCountEqual(v, deps[k])
@@ -88,7 +100,6 @@ class TestTestsConfig(TestCase):
         self.assertDictEqual(result_json, {"unit_directory": str(ud), "pytest_directory": str(pd)})
 
 
-    def test___init___ok_empty(self):
-        config = TestsConfig(**dict())
-        self.assertIsNone(config.unit_directory)
-        self.assertIsNone(config.pytest_directory)
+    def test___init___nok_empty(self):
+        with self.assertRaises(TypeError):
+            config = TestsConfig(**dict())

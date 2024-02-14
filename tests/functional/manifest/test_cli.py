@@ -4,6 +4,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from ledgered.manifest.cli import main, set_parser
+from ledgered.manifest.tests import APPLICATION_DIRECTORY_KEY, APPLICATION_DIRECTORY_NAME
 
 from .. import TEST_MANIFEST_DIRECTORY
 
@@ -49,14 +50,16 @@ UC_D_EXPECTED_TEXT_CHUNKS = [
 tests:
   dependencies:
     testing_develop:""",
-    """
+    f"""
       url: https://github.com/<owner>/<app-repository>
       ref: develop
-      use_case: debug""",
+      use_case: debug
+      application_directory: tests/functional/.dependencies/<app-repository>-develop-debug""",
     """
       url: https://github.com/<owner>/<other-app-repository>
       ref: develop
-      use_case: default"""
+      use_case: default
+      application_directory: tests/functional/.dependencies/<other-app-repository>-develop-default"""
 ]
 
 UC_D_EXPECTED_JSON = {
@@ -65,8 +68,18 @@ UC_D_EXPECTED_JSON = {
 }
 
 EXPECTED_DEPENDENCIES_JSON = [
-    {"url": "https://github.com/<owner>/<app-repository>", "ref": "develop", "use_case": "debug"},
-    {"url": "https://github.com/<owner>/<other-app-repository>", "ref": "develop", "use_case": "default"}
+    {
+        "url": "https://github.com/<owner>/<app-repository>",
+        "ref": "develop",
+        "use_case": "debug",
+        "application_directory": "tests/functional/.dependencies/<app-repository>-develop-debug"
+     },
+    {
+        "url": "https://github.com/<owner>/<other-app-repository>",
+        "ref": "develop",
+        "use_case": "default",
+        "application_directory": "tests/functional/.dependencies/<other-app-repository>-develop-default"
+    }
 ]
 
 
@@ -165,11 +178,13 @@ class TestCLIMain(TestCase):
  0.
   url: https://github.com/<owner>/<app-repository>
   ref: develop
-  use_case: debug"""
+  use_case: debug
+  application_directory: some/dir/.dependencies/<app-repository>-develop-debug"""
         expected_json = {"testing_develop": [{
             "url": "https://github.com/<owner>/<app-repository>",
             "ref": "develop",
-            "use_case": "debug"
+            "use_case": "debug",
+            "application_directory": "some/dir/.dependencies/<app-repository>-develop-debug"
         }]}
         self.assertIsNone(main())
         self.assertEqual(self.text, expected_text)
@@ -204,6 +219,8 @@ class TestCLIMain(TestCase):
 
 
 class TestCLIset_parser(TestCase):
+
+    diffMax = None
 
     def test_set_parser(self):
         parser = set_parser()

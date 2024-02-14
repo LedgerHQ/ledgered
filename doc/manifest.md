@@ -128,6 +128,12 @@ testing_with_latest = [
 
 ```
 
+> [!WARNING]
+> As soon as a single `[[tests.dependencies]]` is defined, the `[tests] pytest_directory` field becomes mandatory.
+> This field will be used in order for ledgered to generate a deterministic path for every dependency.
+> Currently, this path is `<pytest_directory>/.dependencies/<repo_name>-<ref>-<use_case>`.
+
+
 ### Relations with the [reusable workflows](https://github.com/LedgerHQ/ledger-app-workflows/)
 
 When present, the `ledger_app.toml` manifest is used in the
@@ -167,7 +173,7 @@ The impacted workflows and the manifest field / workflow input relations are the
 
 ```sh
 $ ledger-manifest --help
-usage: ledger-manifest [-h] [-v] [-l] [-c CHECK] [-os] [-ob] [-od] [-ou] [-op] manifest
+usage: ledger-manifest [-h] [-v] [-l] [-c CHECK] [-os] [-ob] [-od] [-otu] [-otp] [-otd [OUTPUT_TESTS_DEPENDENCIES ...]] [-ouc [OUTPUT_USE_CASES ...]] [-j] manifest
 
 Utilitary to parse and check an application 'ledger_app.toml' manifest
 
@@ -185,10 +191,15 @@ options:
                         outputs the build directory (where the Makefile in C app, or the Cargo.toml in Rust app is expected to be)
   -od, --output-devices
                         outputs the list of devices supported by the application
-  -ou, --output-unit-directory
+  -otu, --output-tests-unit-directory
                         outputs the directory of the unit tests. Fails if none
-  -op, --output-pytest-directory
+  -otp, --output-tests-pytest-directory
                         outputs the directory of the pytest (functional) tests. Fails if none
+  -otd [OUTPUT_TESTS_DEPENDENCIES ...], --output-tests-dependencies [OUTPUT_TESTS_DEPENDENCIES ...]
+                        outputs the given use cases. Fails if none
+  -ouc [OUTPUT_USE_CASES ...], --output-use-cases [OUTPUT_USE_CASES ...]
+                        outputs the given use cases. Fails if none
+  -j, --json            outputs as JSON rather than text
 ```
 
 ## Deprecated `Rust` manifest
