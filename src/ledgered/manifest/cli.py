@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict
 
 from .constants import MANIFEST_FILE_NAME
-from .manifest import Manifest, LegacyManifest
+from .manifest import Manifest
 from .utils import getLogger
 
 
@@ -42,13 +42,6 @@ def set_parser() -> ArgumentParser:
 
     # generic options
     parser.add_argument('-v', '--verbose', action='count', default=0)
-    parser.add_argument("-l",
-                        "--legacy",
-                        required=False,
-                        action="store_true",
-                        default=False,
-                        help="Specifies if the 'ledger_app.toml' file is a legacy one (with "
-                        "'rust-app' section)")
     parser.add_argument("-c",
                         "--check",
                         required=False,
@@ -127,19 +120,8 @@ def main():  # pragma: no cover
     elif args.verbose > 1:
         logger.setLevel(logging.DEBUG)
 
-    # compatibility check: legacy manifest cannot display sdk, devices, unit/pytest directory
-    if args.legacy and (args.output_sdk or args.output_devices or args.output_devices
-                        or args.output_unit_directory or args.output_pytest_directory):
-        raise ValueError("'-l' option is not compatible with '-os', '-od', 'ou' or 'op'")
-
-    # parsing the manifest
-    if args.legacy:
-        logger.info("Expecting a legacy manifest")
-        manifest_cls = LegacyManifest
-    else:
-        logger.info("Expecting a classic manifest")
-        manifest_cls = Manifest
-    repo_manifest = manifest_cls.from_path(manifest)
+    logger.info("Loading the manifest")
+    repo_manifest = Manifest.from_path(manifest)
 
     # check directory path against manifest data
     if args.check is not None:
@@ -151,14 +133,9 @@ def main():  # pragma: no cover
     logger.info("Displaying manifest info")
     display_content = defaultdict(dict)
 
-    # build_directory can be 'deduced' from legacy manifest
     if args.output_build_directory:
-        if args.legacy:
-            display_content["build_directory"] = str(repo_manifest.manifest_path.parent)
-        else:
-            display_content["build_directory"] = str(repo_manifest.app.build_directory)
+        display_content["build_directory"] = str(repo_manifest.app.build_directory)
 
-    # unlike build_directory, other field can not be deduced from legacy manifest
     if args.output_sdk:
         display_content["sdk"] = repo_manifest.app.sdk
     if args.output_devices:
