@@ -101,5 +101,7 @@ class TestTestsConfig(TestCase):
 
 
     def test___init___nok_empty(self):
-        with self.assertRaises(TypeError):
-            config = TestsConfig(**dict())
+        config = TestsConfig(**dict())
+        self.assertIsNone(config.unit_directory)
+        self.assertIsNone(config.pytest_directory)
+        self.assertIsNone(config.dependencies)
