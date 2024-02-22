@@ -5,7 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] - 2024-01-??
+## [0.4.1] - 2024-02-22
+
+### Fixed
+
+- Fix handling of None value of tests.pytest_directory and tests.unit_directory
+
+
+## [0.4.0] - 2024-02-22
 
 ### Added
 

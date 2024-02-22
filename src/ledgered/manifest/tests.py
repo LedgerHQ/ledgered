@@ -15,6 +15,10 @@ class DuplicateDependencyError(ValueError):
     pass
 
 
+class MissingPytestDirectory(ValueError):
+    pass
+
+
 @dataclass
 class TestsDependencyConfig(Jsonable):
     __test__ = False  # deactivate pytest discovery warning
@@ -77,11 +81,11 @@ class TestsConfig(Jsonable):
     __test__ = False  # deactivate pytest discovery warning
 
     unit_directory: Optional[Path]
-    pytest_directory: Path
+    pytest_directory: Optional[Path]
     dependencies: Optional[JsonDict]
 
     def __init__(self,
-                 pytest_directory: Union[str, Path],
+                 pytest_directory: Optional[Union[str, Path]] = None,
                  unit_directory: Optional[Union[str, Path]] = None,
                  dependencies: Optional[Dict[str, List]] = None) -> None:
         logger = getLogger()
@@ -91,6 +95,8 @@ class TestsConfig(Jsonable):
         if dependencies is None:
             self.dependencies = None
         else:
+            if self.pytest_directory is None:
+                raise MissingPytestDirectory()
             self.dependencies = JsonDict()
             for key, value in dependencies.items():
                 logger.info("Parsing dependencies for '%s' tests", key)
