@@ -1,58 +1,14 @@
 from pathlib import Path
 from unittest import TestCase
 
-from ledgered.utils.manifest import AppConfig, LegacyManifest, Manifest, RepoManifest, \
-    TestsConfig, MANIFEST_FILE_NAME
+from ledgered.manifest.manifest import LegacyManifest, Manifest, RepoManifest, MANIFEST_FILE_NAME
 
-
-TEST_MANIFEST_DIRECTORY = Path(__file__).parent.parent / "_data"
+from .. import TEST_MANIFEST_DIRECTORY
 
 
 class DummyRepoManifest(RepoManifest):
     def check(self, directory) -> None:
         pass
-
-
-class TestAppConfig(TestCase):
-
-    def test___init___ok_complete(self):
-        sdk = "Rust"
-        bd = Path("some path")
-        devices = ["nanos", "NanoS+"]
-        config = AppConfig(sdk=sdk, build_directory=str(bd), devices=devices)
-        self.assertEqual(config.sdk, sdk.lower())
-        self.assertEqual(config.build_directory, bd)
-        self.assertEqual(config.devices, {device.lower() for device in devices})
-        self.assertTrue(config.is_rust)
-        self.assertFalse(config.is_c)
-
-    def test___init___nok_unknown_sdk(self):
-        with self.assertRaises(ValueError):
-            AppConfig(sdk="Java", build_directory=str(), devices=set())
-
-    def test___init___nok_unknown_device(self):
-        devices = {"hic sunt", "dracones"}
-        with self.assertRaises(ValueError) as error:
-            AppConfig(sdk="rust", build_directory=str(), devices=devices)
-        for device in devices:
-            self.assertIn(device, str(error.exception))
-
-
-class TestTestsConfig(TestCase):
-
-    def test____init___ok_complete(self):
-        ud = Path("")
-        pd = Path("something")
-        config = TestsConfig(unit_directory=str(ud), pytest_directory=str(pd))
-        self.assertIsNotNone(config.unit_directory)
-        self.assertEqual(config.unit_directory, ud)
-        self.assertIsNotNone(config.pytest_directory)
-        self.assertEqual(config.pytest_directory, pd)
-
-    def test___init___ok_empty(self):
-        config = TestsConfig(**dict())
-        self.assertIsNone(config.unit_directory)
-        self.assertIsNone(config.pytest_directory)
 
 
 class TestRepoManifest(TestCase):

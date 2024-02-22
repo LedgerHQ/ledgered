@@ -1,0 +1,12 @@
+[app]
+build_directory = "./"
+sdk = "C"
+devices = ["nanox"]
+
+[tests]
+pytest_directory = "some/dir"
+
+[[tests.dependencies.testing_develop]]
+url = "https://github.com/<owner>/<app-repository>"
+ref = "develop"
+use_case = "debug"

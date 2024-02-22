@@ -40,7 +40,7 @@ dev = [
 Home = "https://github.com/LedgerHQ/ledgered"
 
 [project.scripts]
-ledger-manifest = "ledgered.utils.manifest:main"
+ledger-manifest = "ledgered.manifest.cli:main"
 
 [tool.setuptools_scm]
 write_to = "src/ledgered/__version__.py"

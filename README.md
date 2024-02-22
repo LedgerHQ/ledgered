@@ -15,4 +15,4 @@ devices (NanoS, S+, X and Stax).
 
 ## Library sections
 
-- [`ledger.utils.manifest` ](doc/utils/manifest.md)
+- [`ledger.utils.manifest` ](doc/manifest.md)
