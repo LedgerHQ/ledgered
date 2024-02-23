@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest import TestCase
 
 from ledgered.manifest.constants import DEFAULT_USE_CASE
+from ledgered.manifest.errors import MissingField
 from ledgered.manifest.tests import DuplicateDependencyError, TestsConfig, TestsDependencyConfig, \
     TestsDependenciesConfig, APPLICATION_DIRECTORY_KEY, APPLICATION_DIRECTORY_NAME
 
@@ -99,9 +100,12 @@ class TestTestsConfig(TestCase):
         # the rest of the json can be compared
         self.assertDictEqual(result_json, {"unit_directory": str(ud), "pytest_directory": str(pd)})
 
-
     def test___init___nok_empty(self):
         config = TestsConfig(**dict())
         self.assertIsNone(config.unit_directory)
         self.assertIsNone(config.pytest_directory)
         self.assertIsNone(config.dependencies)
+
+    def test___init__missing_field(self):
+        with self.assertRaises(MissingField):
+            TestsConfig(dependencies="something")

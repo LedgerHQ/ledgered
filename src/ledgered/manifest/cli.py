@@ -165,14 +165,12 @@ def main():  # pragma: no cover
         display_content["tests"]["dependencies"] = dependencies
 
     if args.output_tests_unit_directory:
-        if repo_manifest.tests is None or repo_manifest.tests.unit_directory is None or str(
-                repo_manifest.tests.unit_directory) is None:
+        if repo_manifest.tests is None or repo_manifest.tests.unit_directory is None:
             logger.error("This manifest does not contains the 'tests.unit_directory' field")
             sys.exit(2)
         display_content["tests"]["unit_directory"] = str(repo_manifest.tests.unit_directory)
     if args.output_tests_pytest_directory:
-        if repo_manifest.tests is None or repo_manifest.tests.pytest_directory is None or str(
-                repo_manifest.tests.pytest_directory) is None:
+        if repo_manifest.tests is None or repo_manifest.tests.pytest_directory is None:
             logger.error("This manifest does not contains the 'tests.pytest_directory' field")
             sys.exit(2)
         display_content["tests"]["pytest_directory"] = str(repo_manifest.tests.pytest_directory)
