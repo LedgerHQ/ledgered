@@ -89,7 +89,6 @@ class TestCLIMain(TestCase):
     def setUp(self):
         self.args = Namespace(
             manifest=TEST_MANIFEST_DIRECTORY / "full_correct.toml",
-            legacy=False,
             check=None,
             verbose=0,
             output_build_directory=False,

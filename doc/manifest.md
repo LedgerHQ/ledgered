@@ -183,7 +183,6 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -v, --verbose
-  -l, --legacy          Specifies if the 'ledger_app.toml' file is a legacy one (with 'rust-app' section)
   -c CHECK, --check CHECK
                         Check the manifest content against the provided directory.
   -os, --output-sdk     outputs the SDK type
@@ -213,8 +212,8 @@ This manifest had this format:
 manifest-path = "rust-app/Cargo.toml"
 ```
 
-This format is now considered legacy and won't be supported soon. It should be changed to the new
-manifest format.
+This format is considered legacy since October 2023 and is no longer supported since February 2024.
+It should be changed to fit the new manifest format.
 
 In this case, the new manifest should be:
 

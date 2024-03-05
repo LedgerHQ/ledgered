@@ -1,35 +1,9 @@
 from pathlib import Path
 from unittest import TestCase
 
-from ledgered.manifest.manifest import LegacyManifest, Manifest, RepoManifest, MANIFEST_FILE_NAME
+from ledgered.manifest.manifest import Manifest, MANIFEST_FILE_NAME
 
 from .. import TEST_MANIFEST_DIRECTORY
-
-
-class DummyRepoManifest(RepoManifest):
-    def check(self, directory) -> None:
-        pass
-
-
-class TestRepoManifest(TestCase):
-
-    def test_from_path(self):
-        manifest = TEST_MANIFEST_DIRECTORY
-        self.assertIsInstance(DummyRepoManifest.from_path(manifest), Manifest)
-
-        manifest = TEST_MANIFEST_DIRECTORY / "ledger_app.toml"
-        self.assertIsInstance(DummyRepoManifest.from_path(manifest), Manifest)
-
-        legacy = TEST_MANIFEST_DIRECTORY / "legacy" / "ledger_app.toml"
-        self.assertIsInstance(DummyRepoManifest.from_path(legacy), LegacyManifest)
-
-    def test_from_io(self):
-        with (TEST_MANIFEST_DIRECTORY / "ledger_app.toml").open() as io:
-            self.assertIsInstance(DummyRepoManifest.from_io(io), Manifest)
-
-    def test_from_path_nok(self):
-        with self.assertRaises(AssertionError):
-            RepoManifest.from_path(Path("/not/existing/path"))
 
 
 class TestManifest(TestCase):
@@ -71,32 +45,3 @@ class TestManifest(TestCase):
     def test_check_nok(self):
         with self.assertRaises(AssertionError):
             Manifest.from_path(TEST_MANIFEST_DIRECTORY).check("wrong_directory")
-
-
-class TestLegacyManifest(TestCase):
-
-    def test___init___ok(self):
-        expected = "some expected path"
-        manifest = LegacyManifest(**{"rust-app": {"manifest-path": expected}})
-        self.assertEqual(manifest.manifest_path, Path(expected))
-
-    def test___init___nok(self):
-        with self.assertRaises(ValueError):
-            LegacyManifest(wrong_key=4)
-        with self.assertRaises(ValueError):
-            LegacyManifest(**{"rust-app": {"wrong subkey": 4}})
-
-    def test_from_path_ok(self):
-        manifest = LegacyManifest.from_path(TEST_MANIFEST_DIRECTORY / "legacy" / "ledger_app.toml")
-        self.assertEqual(manifest.manifest_path, Path("Cargo.toml"))
-
-    def test_from_path_ok2(self):
-        manifest = LegacyManifest.from_path(TEST_MANIFEST_DIRECTORY / "legacy")
-        self.assertEqual(manifest.manifest_path, Path("Cargo.toml"))
-
-    def test_check_ok(self):
-        LegacyManifest.from_path(TEST_MANIFEST_DIRECTORY / "legacy").check(TEST_MANIFEST_DIRECTORY / "legacy")
-
-    def test_check_nok(self):
-        with self.assertRaises(AssertionError):
-            LegacyManifest.from_path(TEST_MANIFEST_DIRECTORY / "legacy").check("wrong_directory")
