@@ -10,7 +10,7 @@ class TestManifest(TestCase):
 
     def check_ledger_app_toml(self, manifest: Manifest) -> None:
         self.assertEqual(manifest.app.sdk, "rust")
-        self.assertEqual(manifest.app.devices, {"nanos", "stax"})
+        self.assertEqual(manifest.app.devices, {"nanos", "stax", "europa"})
         self.assertEqual(manifest.app.build_directory, Path(""))
         self.assertTrue(manifest.app.is_rust)
         self.assertFalse(manifest.app.is_c)
@@ -19,7 +19,7 @@ class TestManifest(TestCase):
         self.assertEqual(manifest.tests.pytest_directory, Path("pytest"))
 
     def test___init__ok(self):
-        app = {"sdk": "rust", "devices": ["NANOS", "stAX"], "build_directory": ""}
+        app = {"sdk": "rust", "devices": ["NANOS", "stAX", "europa"], "build_directory": ""}
         tests = {"unit_directory": "unit", "pytest_directory": "pytest"}
         self.check_ledger_app_toml(Manifest(app, tests))
 

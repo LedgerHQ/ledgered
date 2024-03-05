@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0] - 2024-??-??
 
+### Added
+
+- ledger-manifest: "Europa" is now a valid `app.devices` value.
+
 ### Removed
 
 - BREAKING: removing references to `LegacyManifest` and `RepoManifest`. Only `Manifest` is to be

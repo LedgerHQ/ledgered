@@ -23,6 +23,7 @@ jobs:
     name: Build, install and test the Ledgered Python package
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python_version: ['3.8', '3.9', '3.10', '3.11']
     steps:
