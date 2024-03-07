@@ -1,7 +1,7 @@
 [app]
 sdk = "Rust"
 build_directory = ""
-devices = ["nanos", "Stax"]
+devices = ["nanos", "Stax", "EUROPA"]
 
 [tests]
 unit_directory = "unit"

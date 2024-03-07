@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 
 from .constants import DEFAULT_USE_CASE
+from .errors import MissingField
 from .types import Jsonable, JsonDict, JsonSet
 from .utils import getLogger
 
@@ -12,10 +13,6 @@ APPLICATION_DIRECTORY_NAME = ".dependencies"
 
 
 class DuplicateDependencyError(ValueError):
-    pass
-
-
-class MissingPytestDirectory(ValueError):
     pass
 
 
@@ -96,7 +93,7 @@ class TestsConfig(Jsonable):
             self.dependencies = None
         else:
             if self.pytest_directory is None:
-                raise MissingPytestDirectory()
+                raise MissingField("[tests] pytest_directory")
             self.dependencies = JsonDict()
             for key, value in dependencies.items():
                 logger.info("Parsing dependencies for '%s' tests", key)
