@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from unittest import TestCase
 
-from ledgered.manifest.types import Jsonable, JsonList, JsonSet, JsonDict
+from ledgered.serializers import Jsonable, JsonList, JsonSet, JsonDict
 
 
 @dataclass

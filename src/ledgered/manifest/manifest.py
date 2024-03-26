@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, IO, Optional, Union
 
+from ledgered.serializers import Jsonable
 from .app import AppConfig
 from .constants import MANIFEST_FILE_NAME
 from .tests import TestsConfig
-from .types import Jsonable
 from .use_cases import UseCasesConfig
 
 

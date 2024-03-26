@@ -3,9 +3,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 
+from ledgered.serializers import Jsonable, JsonDict, JsonSet
 from .constants import DEFAULT_USE_CASE
 from .errors import MissingField
-from .types import Jsonable, JsonDict, JsonSet
 from .utils import getLogger
 
 APPLICATION_DIRECTORY_KEY = "application_directory"

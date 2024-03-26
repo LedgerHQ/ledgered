@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Union
 
+from ledgered.serializers import Jsonable, JsonSet
 from .constants import EXISTING_DEVICES
-from .types import Jsonable, JsonSet
 
 
 @dataclass
