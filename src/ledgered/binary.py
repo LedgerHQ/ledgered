@@ -39,7 +39,7 @@ class LedgerBinaryApp:
         logging.info("Parsing binary '%s'", self._path)
         with self._path.open("rb") as filee:
             sections = {
-                s.name.replace(LEDGER_PREFIX, ""): s.data().decode()
+                s.name.replace(LEDGER_PREFIX, ""): s.data().decode().strip()
                 for s in ELFFile(filee).iter_sections() if LEDGER_PREFIX in s.name
             }
         self._sections = Sections(**sections)
