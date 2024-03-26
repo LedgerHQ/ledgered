@@ -16,6 +16,8 @@ class Sections(Jsonable):
     api_level: Optional[str] = None
     app_name: Optional[str] = None
     app_version: Optional[str] = None
+    rust_sdk_name: Optional[str] = None
+    rust_sdk_version: Optional[str] = None
     sdk_graphics: str = DEFAULT_GRAPHICS
     sdk_hash: Optional[str] = None
     sdk_name: Optional[str] = None
