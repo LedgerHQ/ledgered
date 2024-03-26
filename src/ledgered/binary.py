@@ -25,6 +25,7 @@ class Sections(Jsonable):
     target: Optional[str] = None
     target_id: Optional[str] = None
     target_name: Optional[str] = None
+    target_version: Optional[str] = None
 
     def __str__(self) -> str:
         return "\n".join(f"{key} {value}" for key, value in sorted(asdict(self).items()))
