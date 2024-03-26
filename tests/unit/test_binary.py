@@ -22,7 +22,8 @@ class TestSections(TestCase):
             "sdk_version": "sdk_version",
             "target": "target",
             "target_id": "target_id",
-            "target_name": "target_name"
+            "target_name": "target_name",
+            "target_version": "target_version",
         }
 
     def test___init__empty(self):
@@ -30,6 +31,8 @@ class TestSections(TestCase):
         self.assertIsNone(sections.api_level)
         self.assertIsNone(sections.app_name)
         self.assertIsNone(sections.app_version)
+        self.assertIsNone(sections.rust_sdk_name)
+        self.assertIsNone(sections.rust_sdk_version)
         self.assertEqual(sections.sdk_graphics, B.DEFAULT_GRAPHICS)
         self.assertIsNone(sections.sdk_hash)
         self.assertIsNone(sections.sdk_name)
@@ -37,6 +40,7 @@ class TestSections(TestCase):
         self.assertIsNone(sections.target)
         self.assertIsNone(sections.target_id)
         self.assertIsNone(sections.target_name)
+        self.assertIsNone(sections.target_version)
 
     def test___str__(self):
         sections = B.Sections(**self.inputs)
