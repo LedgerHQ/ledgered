@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.7.0] - 2024-04-12
+
+### Added
+
+- Added wrapper around GitHub API to ease manipulating Ledger application repositories
+
+
 ## [0.6.3] - 2024-03-26
 
 ### Fixed
