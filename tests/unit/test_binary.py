@@ -14,6 +14,8 @@ class TestSections(TestCase):
             "api_level": "api_level",
             "app_name": "app_name",
             "app_version": "app_version",
+            "rust_sdk_name": None,
+            "rust_sdk_version": None,
             "sdk_graphics": "sdk_graphics",
             "sdk_hash": "sdk_hash",
             "sdk_name": "sdk_name",
@@ -44,7 +46,8 @@ class TestSections(TestCase):
 
     def test_json(self):
         sections = B.Sections(**self.inputs)
-        self.assertDictEqual(self.inputs, sections.json)
+        # explicit `str(v)` as None values needs to be converted to 'None'
+        self.assertDictEqual({k: str(v) for k,v in self.inputs.items()}, sections.json)
 
 
 @dataclass
