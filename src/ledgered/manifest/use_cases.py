@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
+from ledgered.serializers import Jsonable, JsonDict
 from .constants import DEFAULT_USE_CASE
-from .types import Jsonable, JsonDict
 
 
 @dataclass
