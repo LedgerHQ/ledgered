@@ -1,5 +1,6 @@
 from enum import IntEnum, auto
 from github import ContentFile as PyContentFile, Github as PyGithub, Repository as PyRepository
+from github.GithubException import UnknownObjectException
 from pathlib import Path
 from typing import List, Optional
 from unittest.mock import patch
@@ -15,6 +16,13 @@ class Condition(IntEnum):
     ONLY = auto()
 
 
+class NoManifestException(FileNotFoundError):
+
+    def __init__(self, repository: "AppRepository"):
+        super().__init__(f"`ledger_app.toml` manifest not found in repository '{repository.url}', "
+                         f"branch '{repository.current_branch}'.")
+
+
 class AppRepository(PyRepository.Repository):
 
     def __init__(self, *args, **kwargs) -> None:
@@ -26,7 +34,13 @@ class AppRepository(PyRepository.Repository):
     @property
     def manifest(self) -> Manifest:
         if self._manifest is None:
-            manifest = self.get_contents(MANIFEST_FILE_NAME, ref=self.current_branch)
+            try:
+                manifest = self.get_contents(MANIFEST_FILE_NAME, ref=self.current_branch)
+            except UnknownObjectException as e:
+                if e.status == 404:
+                    raise NoManifestException(self)
+                raise e
+
             # `get_contents` can return a list, but here there can only be one manifest
             assert isinstance(manifest, PyContentFile.ContentFile)
             manifest_content = manifest.decoded_content.decode()
