@@ -48,4 +48,4 @@ def test_exchange_variant(exchange):
 
 def test_starknet_makefile_path(gh):
     app = gh.get_app("app-starknet")
-    assert app.makefile_path == Path("./Cargo.toml")
+    assert app.makefile_path == Path("./starknet/Cargo.toml")

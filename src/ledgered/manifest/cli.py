@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict
 
 from .constants import MANIFEST_FILE_NAME
+from ..github import GitHubLedgerHQ
 from .manifest import Manifest
 from .utils import getLogger
 
@@ -41,7 +42,7 @@ def set_parser() -> ArgumentParser:
                             "'ledger_app.toml' manifest")
 
     # generic options
-    parser.add_argument('-v', '--verbose', action='count', default=0)
+    parser.add_argument("-v", "--verbose", action="count", default=0)
     parser.add_argument("-c",
                         "--check",
                         required=False,
@@ -52,37 +53,43 @@ def set_parser() -> ArgumentParser:
     # display options
     parser.add_argument("manifest",
                         type=Path,
-                        help=f"The manifest file, generally '{MANIFEST_FILE_NAME}' at the root of "
-                        "the application's repository")
+                        help=f"The manifest file (generally '{MANIFEST_FILE_NAME}' at the root of "
+                        "the application's repository), or the name of the app if the `--url` "
+                        "option is activated")
+    parser.add_argument("-u",
+                        "--url",
+                        action="store_true",
+                        default=False,
+                        help="Tells if the `manifest` is a repository HTTP URL rather than a file")
     parser.add_argument("-os",
                         "--output-sdk",
                         required=False,
-                        action='store_true',
+                        action="store_true",
                         default=False,
                         help="outputs the SDK type")
     parser.add_argument("-ob",
                         "--output-build-directory",
                         required=False,
-                        action='store_true',
+                        action="store_true",
                         default=False,
                         help="outputs the build directory (where the Makefile in C app, or the "
                         "Cargo.toml in Rust app is expected to be)")
     parser.add_argument("-od",
                         "--output-devices",
                         required=False,
-                        action='store_true',
+                        action="store_true",
                         default=False,
                         help="outputs the list of devices supported by the application")
     parser.add_argument("-otu",
                         "--output-tests-unit-directory",
                         required=False,
-                        action='store_true',
+                        action="store_true",
                         default=False,
                         help="outputs the directory of the unit tests. Fails if none")
     parser.add_argument("-otp",
                         "--output-tests-pytest-directory",
                         required=False,
-                        action='store_true',
+                        action="store_true",
                         default=False,
                         help="outputs the directory of the pytest (functional) tests. Fails if "
                         "none")
@@ -108,11 +115,9 @@ def set_parser() -> ArgumentParser:
     return parser
 
 
-def main():  # pragma: no cover
+def main() -> None:  # pragma: no cover
     logger = getLogger()
     args = set_parser().parse_args()
-    assert args.manifest.is_file(), f"'{args.manifest.resolve()}' does not appear to be a file."
-    manifest = args.manifest.resolve()
 
     # verbosity
     if args.verbose == 1:
@@ -121,7 +126,14 @@ def main():  # pragma: no cover
         logger.setLevel(logging.DEBUG)
 
     logger.info("Loading the manifest")
-    repo_manifest = Manifest.from_path(manifest)
+    repo_manifest: Manifest
+    if args.url:
+        repo_manifest = GitHubLedgerHQ().get_app(str(args.manifest)).manifest
+    else:
+        assert args.manifest.is_file(), f"'{args.manifest.resolve()}' does not appear to be a file."
+        manifest = args.manifest.resolve()
+
+        repo_manifest = Manifest.from_path(manifest)
 
     # check directory path against manifest data
     if args.check is not None:
@@ -131,7 +143,7 @@ def main():  # pragma: no cover
 
     # no check
     logger.info("Displaying manifest info")
-    display_content = defaultdict(dict)
+    display_content: Dict = defaultdict(dict)
 
     if args.output_build_directory:
         display_content["build_directory"] = str(repo_manifest.app.build_directory)
@@ -142,7 +154,7 @@ def main():  # pragma: no cover
         display_content["devices"] = list(repo_manifest.app.devices)
 
     if args.output_use_cases is not None:
-        use_cases = repo_manifest.use_cases.json
+        use_cases = repo_manifest.use_cases.json if repo_manifest.use_cases else dict()
         non_empty = len(use_cases) > 0
         if len(args.output_use_cases) != 0:
             use_cases = {k: v for (k, v) in use_cases.items() if k in args.output_use_cases}
@@ -152,7 +164,9 @@ def main():  # pragma: no cover
         display_content["use_cases"] = use_cases
 
     if args.output_tests_dependencies is not None:
-        dependencies = repo_manifest.tests.dependencies.json
+        dependencies = dict()
+        if repo_manifest.tests is not None and repo_manifest.tests.dependencies is not None:
+            dependencies = repo_manifest.tests.dependencies.json
         non_empty = len(dependencies) > 0
         if len(args.output_tests_dependencies) != 0:
             dependencies = {

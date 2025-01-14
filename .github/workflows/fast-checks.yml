@@ -61,3 +61,4 @@ jobs:
       with:
         builtin: clear,rare
         check_filenames: true
+        ignore_words_list: assertIn,crate,
