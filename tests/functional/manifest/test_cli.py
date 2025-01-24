@@ -98,7 +98,8 @@ class TestCLIMain(TestCase):
             output_tests_unit_directory=False,
             output_tests_pytest_directory=False,
             output_tests_dependencies=None,
-            json=False
+            json=False,
+            url=False,
         )
         self.patcher1 = patch("ledgered.manifest.cli.print", PrintMock())
         self.patcher2 = patch("ledgered.manifest.cli.set_parser")
@@ -215,6 +216,11 @@ class TestCLIMain(TestCase):
         self.args.output_tests_pytest_directory = True
         with self.assertRaises(SystemExit):
             main()
+
+    def test_loading_from_url(self):
+        self.args.manifest = "app-boilerplate"
+        self.args.url = True
+        self.assertIsNone(main())
 
 
 class TestCLIset_parser(TestCase):

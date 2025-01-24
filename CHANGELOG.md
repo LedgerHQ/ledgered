@@ -5,46 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-??-??
+
+### Added
+
+- `ledger-manifest`: new `--url` argument allows to parse manifest from an application GH repository
+  rather than a local file.
+
+
 ## [0.7.1] - 2024-04-30
 
 ### Fixed
 
 - Clean error management when there is not `ledger_app.toml` manifest to access to on a given
-  repository/branch
+  repository/branch.
+
 
 ## [0.7.0] - 2024-04-12
 
 ### Added
 
-- Added wrapper around GitHub API to ease manipulating Ledger application repositories
+- Added wrapper around GitHub API to ease manipulating Ledger application repositories.
 
 
 ## [0.6.3] - 2024-03-26
 
 ### Fixed
 
-- ledger-binary: NanoS SDK has a unique `target_version` section.
+- `ledger-binary`: NanoS SDK has a unique `target_version` section.
 
 
 ## [0.6.2] - 2024-03-26
 
 ### Fixed
 
-- ledger-binary: Striping occasional trailing newlines in metadata content.
+- `ledger-binary`: Striping occasional trailing newlines in metadata content.
 
 
 ## [0.6.1] - 2024-03-26
 
 ### Fixed
 
-- ledger-binary: Adding Rust application specific metadata sections.
+- `ledger-binary`: Adding Rust application specific metadata sections.
 
 
 ## [0.6.0] - 2024-03-26
 
 ### Added
 
-- ledger-binary: Adding an utilitary to parse embedded application ELF file metadatas.
+- `ledger-binary`: Adding an utilitary to parse embedded application ELF file metadatas.
 
 ### Changed
 
@@ -55,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- ledger-manifest: "Europa" is now a valid `app.devices` value.
+- `ledger-manifest`: "Europa" is now a valid `app.devices` value.
 
 ### Removed
 
@@ -100,14 +109,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- ledger-manifest: typo `test` instead of `tests` was leading to runtime AttributeError.
+- `ledger-manifest`: typo `test` instead of `tests` was leading to runtime AttributeError.
 
 
 ## [0.2.0] - 2023-10-19
 
 ### Changed
 
-- ledger-manifest: devices are output as a list "[...]" rather than a set "{...}" for easier
+- `ledger-manifest`: devices are output as a list "[...]" rather than a set "{...}" for easier
   reusability.
 
 
@@ -115,5 +124,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- 'ledgered' library Python package
+- `ledgered` library Python package
 - Application 'ledger_app.toml' manifest parser utilitary
