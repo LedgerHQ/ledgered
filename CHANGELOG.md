@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ledger-manifest`: new `--url` argument allows to parse manifest from an application GH repository
   rather than a local file.
 
+### Changed
+
+- Package tested & published on Python3.12 and 3.13. Python 3.8 and 3.9 support is dropped.
+
 
 ## [0.7.1] - 2024-04-30
 
