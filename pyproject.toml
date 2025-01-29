@@ -55,10 +55,6 @@ local_scheme = "no-local-version"
 [tool.mypy]
 ignore_missing_imports = true
 
-[tool.yapf]
-based_on_style = "pep8"
-column_limit = 100
-
 [tool.coverage.report]
 show_missing = true
 exclude_lines = [
@@ -66,8 +62,5 @@ exclude_lines = [
     "pragma: no cover"
 ]
 
-[tool.bandit]
-skips = ["B101"]
-
-[tool.flake8]
-max-line-length = 100
+[tool.ruff]
+line-length = 100

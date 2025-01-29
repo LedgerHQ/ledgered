@@ -33,8 +33,9 @@ class TestsDependencyConfig(Jsonable):
 
     @property
     def dir(self) -> Path:
-        return (self._base_dir / APPLICATION_DIRECTORY_NAME /
-                f"{self._name}-{self.ref}-{self.use_case}")
+        return (
+            self._base_dir / APPLICATION_DIRECTORY_NAME / f"{self._name}-{self.ref}-{self.use_case}"
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TestsDependencyConfig):
@@ -81,10 +82,12 @@ class TestsConfig(Jsonable):
     pytest_directory: Optional[Path]
     dependencies: Optional[JsonDict]
 
-    def __init__(self,
-                 pytest_directory: Optional[Union[str, Path]] = None,
-                 unit_directory: Optional[Union[str, Path]] = None,
-                 dependencies: Optional[Dict[str, List]] = None) -> None:
+    def __init__(
+        self,
+        pytest_directory: Optional[Union[str, Path]] = None,
+        unit_directory: Optional[Union[str, Path]] = None,
+        dependencies: Optional[Dict[str, List]] = None,
+    ) -> None:
         logger = getLogger()
         logger.debug("Parsing test dependencies")
         self.unit_directory = None if unit_directory is None else Path(unit_directory)

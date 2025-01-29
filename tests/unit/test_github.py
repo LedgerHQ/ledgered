@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
 
-from ledgered.github import AppRepository, Condition, GitHubApps, GitHubLedgerHQ
+from ledgered.github import Condition, GitHubApps, GitHubLedgerHQ
 
 
 @dataclass
@@ -13,7 +12,6 @@ class AppRepositoryMock:
 
 
 class TestGitHubApps(TestCase):
-
     def setUp(self):
         self.app1 = AppRepositoryMock("app-1")
         self.app2 = AppRepositoryMock("not-app")
@@ -39,7 +37,6 @@ class TestGitHubApps(TestCase):
 
 
 class TestGitHubLedgerHQ(TestCase):
-
     def setUp(self):
         self.g = GitHubLedgerHQ()
 

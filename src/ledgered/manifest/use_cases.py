@@ -12,8 +12,10 @@ class UseCasesConfig(Jsonable):
     def __init__(self, **cases: Optional[Dict]) -> None:
         for key, value in cases.items():
             if not isinstance(value, str):
-                raise ValueError(f"Use case '{key} = {value}' should have '{value}' as a string, "
-                                 f"not a {type(value)}")
+                raise ValueError(
+                    f"Use case '{key} = {value}' should have '{value}' as a string, "
+                    f"not a {type(value)}"
+                )
             if key == DEFAULT_USE_CASE:
                 raise ValueError(f"'{key}' use case is reserved and cannot be overridden")
         self.cases = JsonDict(cases)

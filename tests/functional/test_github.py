@@ -1,10 +1,9 @@
 import pytest
 import requests
 from pathlib import Path
-from unittest import TestCase
 
 from github.GithubException import GithubException
-from ledgered.github import AppRepository, Condition, GitHubApps, GitHubLedgerHQ
+from ledgered.github import AppRepository, GitHubApps
 
 
 def test_apps(gh):
@@ -29,7 +28,9 @@ def test_exchange_makefile_path(exchange):
 
 
 def test_exchange_makefile(exchange):
-    makefile = requests.get("https://raw.githubusercontent.com/LedgerHQ/app-exchange/develop/Makefile").content.decode()
+    makefile = requests.get(
+        "https://raw.githubusercontent.com/LedgerHQ/app-exchange/develop/Makefile"
+    ).content.decode()
     assert exchange.makefile == makefile
 
 

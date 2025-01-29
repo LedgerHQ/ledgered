@@ -1,7 +1,7 @@
 import logging
 
 __logger__ = None
-DEFAULT_FORMAT = '[%(asctime)s][%(levelname)s] %(name)s - %(message)s'
+DEFAULT_FORMAT = "[%(asctime)s][%(levelname)s] %(name)s - %(message)s"
 
 
 def getLogger() -> logging.Logger:

@@ -6,9 +6,13 @@ from ledgered.github import GitHubLedgerHQ
 
 
 def pytest_addoption(parser):
-    parser.addoption("--token", required=False, default=None,
-                     help="Provide a GitHub token so that functional test won't trigger API "
-                     "restrictions too fast")
+    parser.addoption(
+        "--token",
+        required=False,
+        default=None,
+        help="Provide a GitHub token so that functional test won't trigger API "
+        "restrictions too fast",
+    )
 
 
 @pytest.fixture(scope="session")

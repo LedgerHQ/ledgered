@@ -1,13 +1,12 @@
 from pathlib import Path
 from unittest import TestCase
 
-from ledgered.manifest.manifest import Manifest, MANIFEST_FILE_NAME
+from ledgered.manifest.manifest import Manifest, MANIFEST_FILE_NAME, TestsConfig
 
 from .. import TEST_MANIFEST_DIRECTORY
 
 
 class TestManifest(TestCase):
-
     def check_ledger_app_toml(self, manifest: Manifest) -> None:
         self.assertEqual(manifest.app.sdk, "rust")
         self.assertEqual(manifest.app.devices, {"nanos", "stax", "flex"})
@@ -15,6 +14,7 @@ class TestManifest(TestCase):
         self.assertTrue(manifest.app.is_rust)
         self.assertFalse(manifest.app.is_c)
 
+        self.assertIsInstance(manifest.tests, TestsConfig)
         self.assertEqual(manifest.tests.unit_directory, Path("unit"))
         self.assertEqual(manifest.tests.pytest_directory, Path("pytest"))
 

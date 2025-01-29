@@ -4,19 +4,18 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from ledgered.manifest.cli import main, set_parser
-from ledgered.manifest.tests import APPLICATION_DIRECTORY_KEY, APPLICATION_DIRECTORY_NAME
 
 from .. import TEST_MANIFEST_DIRECTORY
 
 
 class PrintMock(MagicMock):
-
     def get(self):
         result = list()
         for call_args in self.call_args_list:
             result.append(call_args[0][0])
         self.reset_mock()
         return "\n".join(result)
+
 
 FULL_EXPECTED_TEXT = """build_directory: .
 sdk: c
@@ -33,14 +32,8 @@ FULL_EXPECTED_JSON = {
     "build_directory": ".",
     "sdk": "c",
     "devices": ["nanox"],
-    "use_cases": {
-        "debug": "DEBUG=1",
-        "test": "DEBUG=1"
-    },
-    "tests": {
-        "unit_directory": "tests/unit",
-        "pytest_directory": "tests/functional"
-    }
+    "use_cases": {"debug": "DEBUG=1", "test": "DEBUG=1"},
+    "tests": {"unit_directory": "tests/unit", "pytest_directory": "tests/functional"},
 }
 
 UC_D_EXPECTED_TEXT_CHUNKS = [
@@ -50,7 +43,7 @@ UC_D_EXPECTED_TEXT_CHUNKS = [
 tests:
   dependencies:
     testing_develop:""",
-    f"""
+    """
       url: https://github.com/<owner>/<app-repository>
       ref: develop
       use_case: debug
@@ -59,12 +52,12 @@ tests:
       url: https://github.com/<owner>/<other-app-repository>
       ref: develop
       use_case: default
-      application_directory: tests/functional/.dependencies/<other-app-repository>-develop-default"""
+      application_directory: tests/functional/.dependencies/<other-app-repository>-develop-default""",
 ]
 
 UC_D_EXPECTED_JSON = {
-    "use_cases": { "debug": "DEBUG=1", "test": "DEBUG=1" },
-    "tests": { "dependencies": {} }
+    "use_cases": {"debug": "DEBUG=1", "test": "DEBUG=1"},
+    "tests": {"dependencies": {}},
 }
 
 EXPECTED_DEPENDENCIES_JSON = [
@@ -72,14 +65,14 @@ EXPECTED_DEPENDENCIES_JSON = [
         "url": "https://github.com/<owner>/<app-repository>",
         "ref": "develop",
         "use_case": "debug",
-        "application_directory": "tests/functional/.dependencies/<app-repository>-develop-debug"
-     },
+        "application_directory": "tests/functional/.dependencies/<app-repository>-develop-debug",
+    },
     {
         "url": "https://github.com/<owner>/<other-app-repository>",
         "ref": "develop",
         "use_case": "default",
-        "application_directory": "tests/functional/.dependencies/<other-app-repository>-develop-default"
-    }
+        "application_directory": "tests/functional/.dependencies/<other-app-repository>-develop-default",
+    },
 ]
 
 
@@ -132,7 +125,7 @@ class TestCLIMain(TestCase):
     def test_cases_and_dependencies_json(self):
         self.args.output_use_cases = list()
         self.args.output_tests_dependencies = list()
-        self.args.json=True
+        self.args.json = True
         self.assertIsNone(main())
         # like before, the output needs to be divided and the lists compared
         # separately as they may have been re-ordered
@@ -180,12 +173,16 @@ class TestCLIMain(TestCase):
   ref: develop
   use_case: debug
   application_directory: some/dir/.dependencies/<app-repository>-develop-debug"""
-        expected_json = {"testing_develop": [{
-            "url": "https://github.com/<owner>/<app-repository>",
-            "ref": "develop",
-            "use_case": "debug",
-            "application_directory": "some/dir/.dependencies/<app-repository>-develop-debug"
-        }]}
+        expected_json = {
+            "testing_develop": [
+                {
+                    "url": "https://github.com/<owner>/<app-repository>",
+                    "ref": "develop",
+                    "use_case": "debug",
+                    "application_directory": "some/dir/.dependencies/<app-repository>-develop-debug",
+                }
+            ]
+        }
         self.assertIsNone(main())
         self.assertEqual(self.text, expected_text)
 
@@ -224,7 +221,6 @@ class TestCLIMain(TestCase):
 
 
 class TestCLIset_parser(TestCase):
-
     diffMax = None
 
     def test_set_parser(self):
