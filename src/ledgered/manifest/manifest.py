@@ -17,10 +17,9 @@ class Manifest(Jsonable):
     tests: Optional[TestsConfig]
     use_cases: Optional[UseCasesConfig]
 
-    def __init__(self,
-                 app: Dict,
-                 tests: Optional[Dict] = None,
-                 use_cases: Optional[Dict] = None) -> None:
+    def __init__(
+        self, app: Dict, tests: Optional[Dict] = None, use_cases: Optional[Dict] = None
+    ) -> None:
         self.app = AppConfig(**app)
         self.tests = None if tests is None else TestsConfig(**tests)
         self.use_cases = None if use_cases is None else UseCasesConfig(**use_cases)
@@ -43,8 +42,13 @@ class Manifest(Jsonable):
     def check(self, base_directory: Union[str, Path]) -> None:
         base_directory = Path(base_directory)
         assert base_directory.is_dir(), f"Given '{base_directory}' must be a directory"
-        build_file = base_directory / self.app.build_directory / \
-            ("Cargo.toml" if self.app.is_rust else "Makefile")
+        build_file = (
+            base_directory
+            / self.app.build_directory
+            / ("Cargo.toml" if self.app.is_rust else "Makefile")
+        )
         logging.info("Checking existence of file %s", build_file)
-        assert build_file.is_file(), f"No file '{build_file}' (from the given base directory " \
+        assert build_file.is_file(), (
+            f"No file '{build_file}' (from the given base directory "
             f"'{base_directory}' + the manifest path '{self.app.build_directory}') was found"
+        )

@@ -9,53 +9,30 @@ on:
   pull_request:
 
 jobs:
-  lint:
-    name: Linting
+  ruff:
+    name: Checks & format
     runs-on: ubuntu-latest
     steps:
-    - name: Clone
-      uses: actions/checkout@v4
-    - run: pip install flake8 flake8-pyproject
-    - name: Flake8 lint Python code
-      run: flake8 src/
-
-  yapf:
-    name: Formatting
-    runs-on: ubuntu-latest
-    steps:
-    - name: Clone
-      uses: actions/checkout@v4
-    - run: pip install yapf toml
-    - name: Yapf source formatting
-      run: |
-        yapf src/ --recursive -d
+    - uses: actions/checkout@v4
+    - name: Ruff - lint check
+      uses: astral-sh/ruff-action@v3
+    - name: Ruff - format check
+      run: ruff format --check
 
   mypy:
     name: Type checking
     runs-on: ubuntu-latest
     steps:
-    - name: Clone
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
     - run: pip install mypy types-toml
     - name: Mypy type checking
       run: mypy src
-
-  bandit:
-    name: Security checking
-    runs-on: ubuntu-latest
-    steps:
-    - name: Clone
-      uses: actions/checkout@v4
-    - run: pip install bandit
-    - name: Bandit security checking
-      run: bandit -r src -ll
 
   misspell:
     name: Check misspellings
     runs-on: ubuntu-latest
     steps:
-    - name: Clone
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
     - name: Check misspellings
       uses: codespell-project/actions-codespell@v1
       with:

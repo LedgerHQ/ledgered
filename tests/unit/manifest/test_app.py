@@ -5,7 +5,6 @@ from ledgered.manifest.app import AppConfig
 
 
 class TestAppConfig(TestCase):
-
     def test___init___ok_complete(self):
         sdk = "Rust"
         bd = Path("some path")

@@ -11,6 +11,7 @@ class JsonableTest1(Jsonable):
     def __hash__(self):
         return 1
 
+
 @dataclass
 class JsonableTest2(Jsonable):
     one: str
@@ -18,7 +19,6 @@ class JsonableTest2(Jsonable):
 
 
 class TestTypesModule(TestCase):
-
     def setUp(self):
         self.jt1 = JsonableTest1("base")
 
@@ -30,30 +30,30 @@ class TestTypesModule(TestCase):
     def test_JsonList_json(self):
         integer = 4
         string = "str"
-        l = JsonList()
-        l.append(integer)
-        l.append(string)
-        l.append(self.jt1)
+        j_list = JsonList()
+        j_list.append(integer)
+        j_list.append(string)
+        j_list.append(self.jt1)
         expected = [integer, string, {"base": "base"}]
-        self.assertEqual(l.json, expected)
+        self.assertEqual(j_list.json, expected)
 
     def test_JsonSet_json(self):
         integer = 4
         string = "str"
-        l = JsonSet()
-        l.add(integer)
-        l.add(string)
-        l.add(self.jt1)
+        j_set = JsonSet()
+        j_set.add(integer)
+        j_set.add(string)
+        j_set.add(self.jt1)
         expected = [integer, string, {"base": "base"}]
-        result = l.json
+        result = j_set.json
         # the JsonSet.json returns a list, but the set may have broken the order so we can't
         # directly compare the two lists.
         self.assertIsInstance(result, list)
         self.assertCountEqual(result, expected)
 
     def test_JsonDict_json(self):
-        l = JsonDict()
-        l[4] = 5
-        l["base"] = self.jt1
+        j_dict = JsonDict()
+        j_dict[4] = 5
+        j_dict["base"] = self.jt1
         expected = {4: 5, "base": {"base": "base"}}
-        self.assertEqual(l.json, expected)
+        self.assertEqual(j_dict.json, expected)

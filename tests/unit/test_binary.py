@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from pathlib import Path
 from typing import Any
 
@@ -8,7 +8,6 @@ from ledgered import binary as B
 
 
 class TestSections(TestCase):
-
     def setUp(self):
         self.inputs = {
             "api_level": "api_level",
@@ -44,26 +43,26 @@ class TestSections(TestCase):
 
     def test___str__(self):
         sections = B.Sections(**self.inputs)
-        self.assertEqual("\n".join(f"{k} {v}"
-                                   for k,v in sorted(self.inputs.items())),
-                         str(sections))
+        self.assertEqual(
+            "\n".join(f"{k} {v}" for k, v in sorted(self.inputs.items())), str(sections)
+        )
 
     def test_json(self):
         sections = B.Sections(**self.inputs)
         # explicit `str(v)` as None values needs to be converted to 'None'
-        self.assertDictEqual({k: str(v) for k,v in self.inputs.items()}, sections.json)
+        self.assertDictEqual({k: str(v) for k, v in self.inputs.items()}, sections.json)
 
 
 @dataclass
 class Section:
     name: str
     _data: Any
+
     def data(self) -> Any:
         return self._data
 
 
 class TestLedgerBinaryApp(TestCase):
-
     def test___init__(self):
         path = Path("/dev/urandom")
         api_level, sdk_hash = "something", "some hash"
@@ -73,12 +72,12 @@ class TestLedgerBinaryApp(TestCase):
                 Section("unused", 1),
                 Section("ledger.api_level", api_level.encode()),
                 Section("ledger.sdk_hash", sdk_hash.encode()),
-                Section("still not used", b"some data")
+                Section("still not used", b"some data"),
             ]
             bin = B.LedgerBinaryApp(path)
         self.assertEqual(bin.sections, expected)
 
     def test___init__from_str(self):
         path = "/dev/urandom"
-        with patch("ledgered.binary.ELFFile") as elfmock:
+        with patch("ledgered.binary.ELFFile"):
             B.LedgerBinaryApp(path)

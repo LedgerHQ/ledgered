@@ -32,7 +32,6 @@ class Sections(Jsonable):
 
 
 class LedgerBinaryApp:
-
     def __init__(self, binary_path: Union[str, Path]):
         if isinstance(binary_path, str):
             binary_path = Path(binary_path)
@@ -41,7 +40,8 @@ class LedgerBinaryApp:
         with self._path.open("rb") as filee:
             sections = {
                 s.name.replace(LEDGER_PREFIX, ""): s.data().decode().strip()
-                for s in ELFFile(filee).iter_sections() if LEDGER_PREFIX in s.name
+                for s in ELFFile(filee).iter_sections()
+                if LEDGER_PREFIX in s.name
             }
         self._sections = Sections(**sections)
 
@@ -51,16 +51,15 @@ class LedgerBinaryApp:
 
 
 def set_parser() -> ArgumentParser:
-    parser = ArgumentParser(prog="ledger-binary",
-                            description="Utilitary to parse Ledger embedded application ELF file "
-                            "and output metadatas")
-    parser.add_argument('-v', '--verbose', action='count', default=0)
+    parser = ArgumentParser(
+        prog="ledger-binary",
+        description="Utilitary to parse Ledger embedded application ELF file and output metadatas",
+    )
+    parser.add_argument("-v", "--verbose", action="count", default=0)
     parser.add_argument("binary", type=Path, help="The ledger embedded application ELF file")
-    parser.add_argument("-j",
-                        "--json",
-                        required=False,
-                        action="store_true",
-                        help="outputs as JSON rather than text")
+    parser.add_argument(
+        "-j", "--json", required=False, action="store_true", help="outputs as JSON rather than text"
+    )
     return parser
 
 

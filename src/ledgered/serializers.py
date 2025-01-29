@@ -6,12 +6,11 @@ def to_str_int(value: Any) -> Union[int, str]:
 
 
 class Jsonable:
-
     @property
     def json(self) -> Union[Dict, List]:
         output: Dict[Union[str, int], Any] = dict()
         for key, value in self.__dict__.items():
-            if key.startswith('_'):
+            if key.startswith("_"):
                 # 'hidden' properties are not to be included into the output
                 continue
             if isinstance(value, Jsonable):
@@ -22,7 +21,6 @@ class Jsonable:
 
 
 class JsonList(list, Jsonable):
-
     @property
     def json(self) -> List:
         output: List[Any] = list()
@@ -35,7 +33,6 @@ class JsonList(list, Jsonable):
 
 
 class JsonSet(set, Jsonable):
-
     @property
     def json(self) -> List:
         output: List[Any] = list()
@@ -48,7 +45,6 @@ class JsonSet(set, Jsonable):
 
 
 class JsonDict(dict, Jsonable):
-
     @property
     def json(self) -> Dict:
         output: Dict[Union[str, int], Any] = dict()

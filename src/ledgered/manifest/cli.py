@@ -37,81 +37,99 @@ def text_output(content: Dict, indent: int = 0) -> None:
 
 
 def set_parser() -> ArgumentParser:
-    parser = ArgumentParser(prog="ledger-manifest",
-                            description="Utilitary to parse and check an application "
-                            "'ledger_app.toml' manifest")
+    parser = ArgumentParser(
+        prog="ledger-manifest",
+        description="Utilitary to parse and check an application 'ledger_app.toml' manifest",
+    )
 
     # generic options
     parser.add_argument("-v", "--verbose", action="count", default=0)
-    parser.add_argument("-c",
-                        "--check",
-                        required=False,
-                        type=Path,
-                        default=None,
-                        help="Check the manifest content against the provided directory.")
+    parser.add_argument(
+        "-c",
+        "--check",
+        required=False,
+        type=Path,
+        default=None,
+        help="Check the manifest content against the provided directory.",
+    )
 
     # display options
-    parser.add_argument("manifest",
-                        type=Path,
-                        help=f"The manifest file (generally '{MANIFEST_FILE_NAME}' at the root of "
-                        "the application's repository), or the name of the app if the `--url` "
-                        "option is activated")
-    parser.add_argument("-u",
-                        "--url",
-                        action="store_true",
-                        default=False,
-                        help="Tells if the `manifest` is a repository HTTP URL rather than a file")
-    parser.add_argument("-os",
-                        "--output-sdk",
-                        required=False,
-                        action="store_true",
-                        default=False,
-                        help="outputs the SDK type")
-    parser.add_argument("-ob",
-                        "--output-build-directory",
-                        required=False,
-                        action="store_true",
-                        default=False,
-                        help="outputs the build directory (where the Makefile in C app, or the "
-                        "Cargo.toml in Rust app is expected to be)")
-    parser.add_argument("-od",
-                        "--output-devices",
-                        required=False,
-                        action="store_true",
-                        default=False,
-                        help="outputs the list of devices supported by the application")
-    parser.add_argument("-otu",
-                        "--output-tests-unit-directory",
-                        required=False,
-                        action="store_true",
-                        default=False,
-                        help="outputs the directory of the unit tests. Fails if none")
-    parser.add_argument("-otp",
-                        "--output-tests-pytest-directory",
-                        required=False,
-                        action="store_true",
-                        default=False,
-                        help="outputs the directory of the pytest (functional) tests. Fails if "
-                        "none")
-    parser.add_argument("-otd",
-                        "--output-tests-dependencies",
-                        required=False,
-                        action='store',
-                        default=None,
-                        nargs='*',
-                        help="outputs the given use cases. Fails if none")
-    parser.add_argument("-ouc",
-                        "--output-use-cases",
-                        required=False,
-                        default=None,
-                        action='store',
-                        nargs='*',
-                        help="outputs the given use cases. Fails if none")
-    parser.add_argument("-j",
-                        "--json",
-                        required=False,
-                        action="store_true",
-                        help="outputs as JSON rather than text")
+    parser.add_argument(
+        "manifest",
+        type=Path,
+        help=f"The manifest file (generally '{MANIFEST_FILE_NAME}' at the root of "
+        "the application's repository), or the name of the app if the `--url` "
+        "option is activated",
+    )
+    parser.add_argument(
+        "-u",
+        "--url",
+        action="store_true",
+        default=False,
+        help="Tells if the `manifest` is a repository HTTP URL rather than a file",
+    )
+    parser.add_argument(
+        "-os",
+        "--output-sdk",
+        required=False,
+        action="store_true",
+        default=False,
+        help="outputs the SDK type",
+    )
+    parser.add_argument(
+        "-ob",
+        "--output-build-directory",
+        required=False,
+        action="store_true",
+        default=False,
+        help="outputs the build directory (where the Makefile in C app, or the "
+        "Cargo.toml in Rust app is expected to be)",
+    )
+    parser.add_argument(
+        "-od",
+        "--output-devices",
+        required=False,
+        action="store_true",
+        default=False,
+        help="outputs the list of devices supported by the application",
+    )
+    parser.add_argument(
+        "-otu",
+        "--output-tests-unit-directory",
+        required=False,
+        action="store_true",
+        default=False,
+        help="outputs the directory of the unit tests. Fails if none",
+    )
+    parser.add_argument(
+        "-otp",
+        "--output-tests-pytest-directory",
+        required=False,
+        action="store_true",
+        default=False,
+        help="outputs the directory of the pytest (functional) tests. Fails if none",
+    )
+    parser.add_argument(
+        "-otd",
+        "--output-tests-dependencies",
+        required=False,
+        action="store",
+        default=None,
+        nargs="*",
+        help="outputs the given use cases. Fails if none",
+    )
+    parser.add_argument(
+        "-ouc",
+        "--output-use-cases",
+        required=False,
+        default=None,
+        action="store",
+        nargs="*",
+        help="outputs the given use cases. Fails if none",
+    )
+    parser.add_argument(
+        "-j", "--json", required=False, action="store_true", help="outputs as JSON rather than text"
+    )
     return parser
 
 
@@ -170,8 +188,7 @@ def main() -> None:  # pragma: no cover
         non_empty = len(dependencies) > 0
         if len(args.output_tests_dependencies) != 0:
             dependencies = {
-                k: v
-                for (k, v) in dependencies.items() if k in args.output_tests_dependencies
+                k: v for (k, v) in dependencies.items() if k in args.output_tests_dependencies
             }
         if not len(dependencies) and non_empty:
             logger.error("No use case match these ones: '%s'", args.output_tests_dependencies)

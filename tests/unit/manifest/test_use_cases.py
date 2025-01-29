@@ -1,4 +1,3 @@
-from pathlib import Path
 from unittest import TestCase
 
 from ledgered.manifest.constants import DEFAULT_USE_CASE
@@ -6,11 +5,9 @@ from ledgered.manifest.use_cases import UseCasesConfig
 
 
 class TestUseCaseConfig(TestCase):
-
     def setUp(self):
         self.key = "first"
-        self.cases = {self.key: "something",
-                   "other": "something else"}
+        self.cases = {self.key: "something", "other": "something else"}
         self.uc = UseCasesConfig(**self.cases)
 
     def test___init__empty(self):

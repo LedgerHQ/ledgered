@@ -17,14 +17,14 @@ class Condition(IntEnum):
 
 
 class NoManifestException(FileNotFoundError):
-
     def __init__(self, repository: "AppRepository"):
-        super().__init__(f"`ledger_app.toml` manifest not found in repository '{repository.url}', "
-                         f"branch '{repository.current_branch}'.")
+        super().__init__(
+            f"`ledger_app.toml` manifest not found in repository '{repository.url}', "
+            f"branch '{repository.current_branch}'."
+        )
 
 
 class AppRepository(PyRepository.Repository):
-
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._manifest: Optional[Manifest] = None
@@ -60,8 +60,9 @@ class AppRepository(PyRepository.Repository):
     def makefile(self) -> str:
         if self._makefile is None:
             # paths on Windows contain "\" which are not compatible with GitHub remote paths
-            makefile = self.get_contents(str(self.makefile_path).replace("\\", "/"),
-                                         ref=self.current_branch)
+            makefile = self.get_contents(
+                str(self.makefile_path).replace("\\", "/"), ref=self.current_branch
+            )
             # `get_contents` can return a list, but here there can only be one Makefile / Cargo.toml
             assert isinstance(makefile, PyContentFile.ContentFile)
             self._makefile = makefile.decoded_content.decode()
@@ -72,9 +73,9 @@ class AppRepository(PyRepository.Repository):
         variants = []
         for line in self.makefile.splitlines():
             if "VARIANTS" in line:
-                variants.extend(line.split(' ')[3:])
+                variants.extend(line.split(" ")[3:])
             elif "VARIANT_VALUES = " in line:
-                variants.extend(line.split(" = ")[1].split(' '))
+                variants.extend(line.split(" = ")[1].split(" "))
         return variants
 
     @property
@@ -90,14 +91,15 @@ class AppRepository(PyRepository.Repository):
 
 
 class GitHubApps(list):
-
     def __init__(self, apps: List[AppRepository]):
         super().__init__([r for r in apps if r.name.startswith("app-")])
 
-    def filter(self,
-               name: Optional[str] = None,
-               archived: Condition = Condition.WITH,
-               private: Condition = Condition.WITH) -> "GitHubApps":
+    def filter(
+        self,
+        name: Optional[str] = None,
+        archived: Condition = Condition.WITH,
+        private: Condition = Condition.WITH,
+    ) -> "GitHubApps":
         new_list = [i for i in self]
         # archived filtering
         if archived == Condition.WITHOUT:
@@ -120,7 +122,6 @@ class GitHubApps(list):
 
 
 class GitHubLedgerHQ(PyGithub):
-
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._org = self.get_organization(LEDGER_ORG_NAME)
