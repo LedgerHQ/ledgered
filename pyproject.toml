@@ -64,3 +64,6 @@ exclude_lines = [
 
 [tool.ruff]
 line-length = 100
+
+[tool.bandit]
+skips = ["B101"]
