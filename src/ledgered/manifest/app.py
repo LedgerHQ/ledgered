@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Iterable, Union
 
 from ledgered.serializers import Jsonable, JsonSet
-from .constants import EXISTING_DEVICES
+from ledgered.devices import Devices
 
 
 @dataclass
@@ -18,12 +18,7 @@ class AppConfig(Jsonable):
             raise ValueError(f"'{sdk}' unknown. Must be either 'C' or 'Rust'")
         self.sdk = sdk
         self.build_directory = Path(build_directory)
-        devices = JsonSet(device.lower() for device in devices)
-        unknown_devices = devices.difference(EXISTING_DEVICES)
-        if unknown_devices:
-            unknown_devices_str = "', '".join(unknown_devices)
-            raise ValueError(f"Unknown devices: '{unknown_devices_str}'")
-        self.devices = devices
+        self.devices = JsonSet(Devices.get_by_name(device).name for device in devices)
 
     @property
     def is_rust(self) -> bool:
