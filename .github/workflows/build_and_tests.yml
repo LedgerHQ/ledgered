@@ -17,10 +17,6 @@ on:
       - 'tests/**'
       - .github/workflows/build_and_tests.yml
 
-permissions:
-  id-token: write
-  attestations: write
-
 jobs:
 
   build_install_test:
@@ -64,6 +60,9 @@ jobs:
     name: Build and deploy Ledgered Python package
     runs-on: public-ledgerhq-shared-small
     needs: [build_install_test]
+    permissions:
+      id-token: write
+      attestations: write
     steps:
 
     - name: Clone
