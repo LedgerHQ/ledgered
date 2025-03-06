@@ -81,7 +81,7 @@ class TestCLIMain(TestCase):
 
     def setUp(self):
         self.args = Namespace(
-            manifest=TEST_MANIFEST_DIRECTORY / "full_correct.toml",
+            source=TEST_MANIFEST_DIRECTORY / "full_correct.toml",
             check=None,
             verbose=0,
             output_build_directory=False,
@@ -165,7 +165,7 @@ class TestCLIMain(TestCase):
         self.assertEqual(FULL_EXPECTED_JSON, self.json)
 
     def test_single_leaf(self):
-        self.args.manifest = TEST_MANIFEST_DIRECTORY / "one_leaf.toml"
+        self.args.source = TEST_MANIFEST_DIRECTORY / "one_leaf.toml"
         self.args.output_tests_dependencies = list()
         expected_text = """testing_develop:
  0.
@@ -201,21 +201,21 @@ class TestCLIMain(TestCase):
             main()
 
     def test_error_inexisting_tests_unit_directory(self):
-        self.args.manifest = TEST_MANIFEST_DIRECTORY / "minimal.toml"
+        self.args.source = TEST_MANIFEST_DIRECTORY / "minimal.toml"
         # non existing unit directory
         self.args.output_tests_unit_directory = True
         with self.assertRaises(SystemExit):
             main()
 
     def test_error_inexisting_tests_pytest_directory(self):
-        self.args.manifest = TEST_MANIFEST_DIRECTORY / "minimal.toml"
+        self.args.source = TEST_MANIFEST_DIRECTORY / "minimal.toml"
         # non existing unit directory
         self.args.output_tests_pytest_directory = True
         with self.assertRaises(SystemExit):
             main()
 
     def test_loading_from_url(self):
-        self.args.manifest = "app-boilerplate"
+        self.args.source = "app-boilerplate"
         self.args.url = True
         self.assertIsNone(main())
 
