@@ -55,7 +55,7 @@ def set_parser() -> ArgumentParser:
 
     # display options
     parser.add_argument(
-        "manifest",
+        "source",
         type=Path,
         help=f"The manifest file (generally '{MANIFEST_FILE_NAME}' at the root of "
         "the application's repository), or the name of the app if the `--url` "
@@ -66,7 +66,7 @@ def set_parser() -> ArgumentParser:
         "--url",
         action="store_true",
         default=False,
-        help="Tells if the `manifest` is a repository HTTP URL rather than a file",
+        help="Tells if the `manifest` should be fetched from `github.com` rather than a file",
     )
     parser.add_argument(
         "-os",
@@ -146,10 +146,10 @@ def main() -> None:  # pragma: no cover
     logger.info("Loading the manifest")
     repo_manifest: Manifest
     if args.url:
-        repo_manifest = GitHubLedgerHQ().get_app(str(args.manifest)).manifest
+        repo_manifest = GitHubLedgerHQ().get_app(str(args.source)).manifest
     else:
-        assert args.manifest.is_file(), f"'{args.manifest.resolve()}' does not appear to be a file."
-        manifest = args.manifest.resolve()
+        assert args.source.is_file(), f"'{args.source.resolve()}' does not appear to be a file."
+        manifest = args.source.resolve()
 
         repo_manifest = Manifest.from_path(manifest)
 
