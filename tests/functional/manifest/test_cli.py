@@ -84,6 +84,7 @@ class TestCLIMain(TestCase):
             source=TEST_MANIFEST_DIRECTORY / "full_correct.toml",
             check=None,
             verbose=0,
+            token=None,
             output_build_directory=False,
             output_sdk=False,
             output_devices=False,

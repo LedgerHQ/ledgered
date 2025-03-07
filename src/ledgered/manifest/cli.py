@@ -62,6 +62,13 @@ def set_parser() -> ArgumentParser:
         "option is activated",
     )
     parser.add_argument(
+        "--token",
+        required=False,
+        default=None,
+        help="Provide a GitHub token so that functional test won't trigger API "
+        "restrictions too fast",
+    )
+    parser.add_argument(
         "-u",
         "--url",
         action="store_true",
@@ -146,7 +153,8 @@ def main() -> None:  # pragma: no cover
     logger.info("Loading the manifest")
     repo_manifest: Manifest
     if args.url:
-        repo_manifest = GitHubLedgerHQ().get_app(str(args.source)).manifest
+        gh_ledger = GitHubLedgerHQ() if args.token is None else GitHubLedgerHQ(args.token)
+        repo_manifest = gh_ledger.get_app(str(args.source)).manifest
     else:
         assert args.source.is_file(), f"'{args.source.resolve()}' does not appear to be a file."
         manifest = args.source.resolve()
