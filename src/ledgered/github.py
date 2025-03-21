@@ -8,6 +8,7 @@ from unittest.mock import patch
 from ledgered.manifest import MANIFEST_FILE_NAME, Manifest
 
 LEDGER_ORG_NAME = "ledgerhq"
+APP_PLUGIN_PREFIX = "app-plugin-"
 
 
 class Condition(IntEnum):
@@ -99,8 +100,20 @@ class GitHubApps(list):
         name: Optional[str] = None,
         archived: Condition = Condition.WITH,
         private: Condition = Condition.WITH,
+        legacy: Condition = Condition.WITH,
+        plugin: Condition = Condition.WITH,
+        only_list: Optional[List[str]] = None,
+        exclude_list: Optional[List[str]] = None,
+        sdk: Optional[List[str]] = None,
     ) -> "GitHubApps":
         new_list = [i for i in self]
+        # only_list filtering (takes precedence on exclude_list)
+        if only_list:
+            new_list = [r for r in new_list if r.name in only_list]
+        # exclude_list filtering
+        elif exclude_list:
+            new_list = [r for r in new_list if r.name not in exclude_list]
+        # sdk filtering
         # archived filtering
         if archived == Condition.WITHOUT:
             new_list = [r for r in new_list if not r.archived]
@@ -114,6 +127,28 @@ class GitHubApps(list):
         # name filtering
         if name is not None:
             new_list = [r for r in new_list if name.lower() in r.name.lower()]
+        # legacy apps filtering
+        if legacy == Condition.WITHOUT:
+            new_list = [r for r in new_list if "legacy" not in r.name.lower()]
+        elif legacy == Condition.ONLY:
+            new_list = [r for r in new_list if "legacy" in r.name.lower()]
+        # plugin apps filtering
+        if plugin == Condition.WITHOUT:
+            new_list = [r for r in new_list if not r.name.lower().startswith(APP_PLUGIN_PREFIX)]
+        elif plugin == Condition.ONLY:
+            new_list = [r for r in new_list if r.name.lower().startswith(APP_PLUGIN_PREFIX)]
+        if sdk is not None:
+            # Check list of sdk
+            sdk_list = [s.lower() for s in sdk]
+            res_list = []
+            for r in new_list:
+                try:
+                    if r.manifest.app.sdk in sdk_list:
+                        res_list.append(r)
+                except NoManifestException:
+                    pass
+            new_list = res_list
+
         return GitHubApps(new_list)
 
     def first(self, *args, **kwargs) -> Optional[AppRepository]:
