@@ -43,8 +43,12 @@ def test_exchange_branches(exchange):
         exchange.current_branch = "does not exists"
 
 
-def test_exchange_variant(exchange):
+def test_exchange_variant_values(exchange):
     assert exchange.variants == ["exchange"]
+
+
+def test_exchange_variant_param(exchange):
+    assert exchange.variant_param == "COIN"
 
 
 def test_starknet_makefile_path(gh):
