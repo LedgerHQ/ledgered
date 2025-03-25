@@ -102,10 +102,13 @@ class AppRepository(PyRepository.Repository):
         for line in self.makefile.splitlines():
             if "VARIANTS" in line:
                 # Ex: `@echo VARIANTS COIN ACA ACA_XL`
+                # Sometimes, it can be a computed value in the Makefile, ex: `@echo VARIANTS CHAIN $(SUPPORTED_CHAINS)`
+                # => No solution to get them for now
                 parts = line.split(" ")
                 if len(parts) >= 3:
                     self._variant_param = parts[2]
-                    self._variant_values = parts[3:]
+                    if not parts[3].startswith("$("):
+                        self._variant_values = parts[3:]
             elif "VARIANT_PARAM" in line and "=" in line:
                 # There should be a single word here, ex: `VARIANT_PARAM = COIN`
                 self._variant_param = line.split("=")[1].split()[0]
