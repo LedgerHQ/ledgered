@@ -8,6 +8,7 @@ from unittest.mock import patch
 from ledgered.manifest import MANIFEST_FILE_NAME, Manifest
 
 LEDGER_ORG_NAME = "ledgerhq"
+APP_PLUGIN_PREFIX = "app-plugin-"
 
 
 class Condition(IntEnum):
@@ -30,6 +31,8 @@ class AppRepository(PyRepository.Repository):
         self._manifest: Optional[Manifest] = None
         self._makefile: Optional[str] = None
         self._branch: str = self.default_branch
+        self._variant_param: Optional[str] = None
+        self._variant_values: List[str] = []
 
     @property
     def manifest(self) -> Manifest:
@@ -70,13 +73,15 @@ class AppRepository(PyRepository.Repository):
 
     @property
     def variants(self) -> List[str]:
-        variants = []
-        for line in self.makefile.splitlines():
-            if "VARIANTS" in line:
-                variants.extend(line.split(" ")[3:])
-            elif "VARIANT_VALUES = " in line:
-                variants.extend(line.split(" = ")[1].split(" "))
-        return variants
+        if not self._variant_values:
+            self.__set_variants()
+        return self._variant_values
+
+    @property
+    def variant_param(self) -> Optional[str]:
+        if self._variant_param is None:
+            self.__set_variants()
+        return self._variant_param
 
     @property
     def current_branch(self) -> str:
@@ -88,6 +93,39 @@ class AppRepository(PyRepository.Repository):
         # invalidating previously fetched info, as they may differ on another branch
         self._manifest = None
         self._makefile = None
+        self._variant_param = None
+        self._variant_values.clear()
+
+    def __set_variants(self) -> None:
+        """Extracts the variants from the app Makefile"""
+
+        for line in self.makefile.splitlines():
+            if "VARIANTS" in line:
+                # Ex: `@echo VARIANTS COIN ACA ACA_XL`
+                parts = line.split(" ")
+                if len(parts) >= 3:
+                    self._variant_param = parts[2]
+                    self._variant_values = parts[3:]
+            elif "VARIANT_PARAM" in line and "=" in line:
+                # There should be a single word here, ex: `VARIANT_PARAM = COIN`
+                self._variant_param = line.split("=")[1].split()[0]
+            elif "VARIANT_VALUES" in line and "=" in line:
+                # We can have multiple values here, ex: `VARIANT_VALUES = bitcoin_testnet bitcoin`
+                # Sometimes, it can be a computed value in the Makefile, ex: `VARIANT_VALUES = $(SUPPORTED_CHAINS)`
+                # => No solution to get them for now
+                self._variant_values = [
+                    val.strip() for val in line.split("=")[1].split() if not val.startswith("$(")
+                ]
+
+            if self._variant_param is not None and self._variant_values:
+                break
+        else:
+            # No variant found
+            self._variant_values = []
+
+        if not self._variant_values:
+            # Invalid configuration, reset the name
+            self._variant_param = None
 
 
 class GitHubApps(list):
@@ -99,8 +137,20 @@ class GitHubApps(list):
         name: Optional[str] = None,
         archived: Condition = Condition.WITH,
         private: Condition = Condition.WITH,
+        legacy: Condition = Condition.WITH,
+        plugin: Condition = Condition.WITH,
+        only_list: Optional[List[str]] = None,
+        exclude_list: Optional[List[str]] = None,
+        sdk: Optional[List[str]] = None,
     ) -> "GitHubApps":
         new_list = [i for i in self]
+        # only_list filtering (takes precedence on exclude_list)
+        if only_list:
+            new_list = [r for r in new_list if r.name in only_list]
+        # exclude_list filtering
+        elif exclude_list:
+            new_list = [r for r in new_list if r.name not in exclude_list]
+        # sdk filtering
         # archived filtering
         if archived == Condition.WITHOUT:
             new_list = [r for r in new_list if not r.archived]
@@ -114,6 +164,28 @@ class GitHubApps(list):
         # name filtering
         if name is not None:
             new_list = [r for r in new_list if name.lower() in r.name.lower()]
+        # legacy apps filtering
+        if legacy == Condition.WITHOUT:
+            new_list = [r for r in new_list if "legacy" not in r.name.lower()]
+        elif legacy == Condition.ONLY:
+            new_list = [r for r in new_list if "legacy" in r.name.lower()]
+        # plugin apps filtering
+        if plugin == Condition.WITHOUT:
+            new_list = [r for r in new_list if not r.name.lower().startswith(APP_PLUGIN_PREFIX)]
+        elif plugin == Condition.ONLY:
+            new_list = [r for r in new_list if r.name.lower().startswith(APP_PLUGIN_PREFIX)]
+        if sdk is not None:
+            # Check list of sdk
+            sdk_list = [s.lower() for s in sdk]
+            res_list = []
+            for r in new_list:
+                try:
+                    if r.manifest.app.sdk in sdk_list:
+                        res_list.append(r)
+                except NoManifestException:
+                    pass
+            new_list = res_list
+
         return GitHubApps(new_list)
 
     def first(self, *args, **kwargs) -> Optional[AppRepository]:

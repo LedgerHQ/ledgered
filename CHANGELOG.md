@@ -5,12 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9.0] - 2025-03-??
+## [0.9.0] - 2025-03-25
 
 ### Added
 
 - `ledger-manifest`: new `--token` argument, allowing to provide a PAT to evade GitHub API
   limitations when parsing remote manifest (with the `--url` argument).
+- New _property_ to get more info for variants: `variant_param`
+- New filtering options:
+  - `legacy`: to select or not the Apps whose name contains _legacy_ in their name (disabled by default)
+  - `plugin`: to select or not the Apps whose name starts by _app-plugin-_ (disabled by default)
+  - `only_list`: to select only a predefined list of Apps
+  - `exclude_list`: to exclude a predefined list of Apps
+  - `sdk`: to filter apps, based on their SDK (C or Rust)
 
 ## [0.8.0] - 2025-03-06
 
