@@ -74,13 +74,13 @@ class AppRepository(PyRepository.Repository):
     @property
     def variants(self) -> List[str]:
         if not self._variant_values:
-            self.__set_variants()
+            self._set_variants()
         return self._variant_values
 
     @property
     def variant_param(self) -> Optional[str]:
         if self._variant_param is None:
-            self.__set_variants()
+            self._set_variants()
         return self._variant_param
 
     @property
@@ -96,7 +96,7 @@ class AppRepository(PyRepository.Repository):
         self._variant_param = None
         self._variant_values.clear()
 
-    def __set_variants(self) -> None:
+    def _set_variants(self) -> None:
         """Extracts the variants from the app Makefile"""
 
         for line in self.makefile.splitlines():
