@@ -74,13 +74,13 @@ class AppRepository(PyRepository.Repository):
     @property
     def variants(self) -> List[str]:
         if not self._variant_values:
-            self.__set_variants()
+            self._set_variants()
         return self._variant_values
 
     @property
     def variant_param(self) -> Optional[str]:
         if self._variant_param is None:
-            self.__set_variants()
+            self._set_variants()
         return self._variant_param
 
     @property
@@ -96,16 +96,19 @@ class AppRepository(PyRepository.Repository):
         self._variant_param = None
         self._variant_values.clear()
 
-    def __set_variants(self) -> None:
+    def _set_variants(self) -> None:
         """Extracts the variants from the app Makefile"""
 
         for line in self.makefile.splitlines():
             if "VARIANTS" in line:
                 # Ex: `@echo VARIANTS COIN ACA ACA_XL`
+                # Sometimes, it can be a computed value in the Makefile, ex: `@echo VARIANTS CHAIN $(SUPPORTED_CHAINS)`
+                # => No solution to get them for now
                 parts = line.split(" ")
                 if len(parts) >= 3:
                     self._variant_param = parts[2]
-                    self._variant_values = parts[3:]
+                    if not parts[3].startswith("$("):
+                        self._variant_values = parts[3:]
             elif "VARIANT_PARAM" in line and "=" in line:
                 # There should be a single word here, ex: `VARIANT_PARAM = COIN`
                 self._variant_param = line.split("=")[1].split()[0]
