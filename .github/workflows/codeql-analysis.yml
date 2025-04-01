@@ -15,6 +15,10 @@ on:
       - tests
   schedule:
     - cron: '35 0 * * 5'
+# Cancel previous runs on this reference
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze:

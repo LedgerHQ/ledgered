@@ -16,6 +16,11 @@ on:
       - 'src/**'
       - 'tests/**'
       - .github/workflows/build_and_tests.yml
+# Cancel previous runs on this reference
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
 
