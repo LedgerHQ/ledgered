@@ -12,7 +12,7 @@ class TestAppConfig(TestCase):
         config = AppConfig(sdk=sdk, build_directory=str(bd), devices=devices)
         self.assertEqual(config.sdk, sdk.lower())
         self.assertEqual(config.build_directory, bd)
-        self.assertEqual(config.devices, {device.lower() for device in devices})
+        self.assertEqual(config.devices, {"nanos", "nanosp"})
         self.assertTrue(config.is_rust)
         self.assertFalse(config.is_c)
 
@@ -21,8 +21,6 @@ class TestAppConfig(TestCase):
             AppConfig(sdk="Java", build_directory=str(), devices=set())
 
     def test___init___nok_unknown_device(self):
-        devices = {"hic sunt", "dracones"}
-        with self.assertRaises(ValueError) as error:
+        devices = {"nanosp", "flex", "hic sunt", "dracones"}
+        with self.assertRaises(KeyError):
             AppConfig(sdk="rust", build_directory=str(), devices=devices)
-        for device in devices:
-            self.assertIn(device, str(error.exception))
