@@ -45,9 +45,6 @@ jobs:
         pip install -U pip
         pip install -U .[dev]
 
-    - name: Run tests and generate coverage
-      run: pytest -v --tb=short tests/ --cov ledgered --cov-report xml
-
     - name: Run unit tests and generate coverage
       run: pytest -v --tb=short tests/unit --cov ledgered --cov-report xml
 
