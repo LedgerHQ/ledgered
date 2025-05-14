@@ -53,6 +53,8 @@ class TestDevices(TestCase):
         device = Devices.get_by_name("nanos+")
         self.assertIsInstance(device, Device)
         self.assertEqual(device.type, DeviceType.NANOSP)
+        self.assertEqual(device.name, "nanosp")
+        self.assertEqual(device.sdk_name, "nanos+")
 
     def test_get_by_name_nok(self):
         with self.assertRaises(KeyError):

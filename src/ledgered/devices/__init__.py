@@ -3,6 +3,7 @@ import json
 from enum import IntEnum, auto
 from pathlib import Path
 from pydantic.dataclasses import dataclass
+from typing import Optional
 
 
 class DeviceType(IntEnum):
@@ -26,6 +27,7 @@ class Device:
     touchable: bool = True
     deprecated: bool = False
     names: list[str] = dataclasses.field(default_factory=lambda: [])
+    _sdk_name: Optional[str] = None
 
     @property
     def name(self) -> str:
@@ -33,6 +35,14 @@ class Device:
         Returns the name of the current firmware's device
         """
         return self.type.name.lower()
+
+    @property
+    def sdk_name(self) -> str:
+        """
+        Returns the SDK name, meaning the device name used to tag the SDK.
+        If the device does not have a SDK name, returns the default name
+        """
+        return self._sdk_name or self.name
 
     @property
     def is_nano(self):

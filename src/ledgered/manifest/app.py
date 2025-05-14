@@ -18,7 +18,7 @@ class AppConfig(Jsonable):
             raise ValueError(f"'{sdk}' unknown. Must be either 'C' or 'Rust'")
         self.sdk = sdk
         self.build_directory = Path(build_directory)
-        self.devices = JsonSet(Devices.get_by_name(device).name for device in devices)
+        self.devices = JsonSet(Devices.get_by_name(device).sdk_name for device in devices)
 
     @property
     def is_rust(self) -> bool:

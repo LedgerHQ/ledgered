@@ -12,7 +12,7 @@ class TestAppConfig(TestCase):
         config = AppConfig(sdk=sdk, build_directory=str(bd), devices=devices)
         self.assertEqual(config.sdk, sdk.lower())
         self.assertEqual(config.build_directory, bd)
-        self.assertEqual(config.devices, {"nanos", "nanosp"})
+        self.assertEqual(config.devices, {"nanos", "nanos+"})
         self.assertTrue(config.is_rust)
         self.assertFalse(config.is_c)
 

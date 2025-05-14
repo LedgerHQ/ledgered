@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2025-05-14
+
+### Fix
+
+- Parsing 'nanos+' in manifests now returns 'nanosp', which is breaking when this name is used to
+  gather a SDK tag.
+  Added a specific "sdk_name" field in the JSON / `Device` to be returned when parsing the manifest,
+  to get back the previous, 0.9.1- behavior.
+
 ## [0.10.0] - 2025-05-09
 
 ### Added
