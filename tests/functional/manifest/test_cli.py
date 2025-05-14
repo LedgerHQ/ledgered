@@ -20,7 +20,7 @@ class PrintMock(MagicMock):
 FULL_EXPECTED_TEXT = """build_directory: .
 sdk: c
 devices:
-0. nanox
+0. nanos+
 use_cases:
   debug: DEBUG=1
   test: DEBUG=1
@@ -31,7 +31,7 @@ tests:
 FULL_EXPECTED_JSON = {
     "build_directory": ".",
     "sdk": "c",
-    "devices": ["nanox"],
+    "devices": ["nanos+"],
     "use_cases": {"debug": "DEBUG=1", "test": "DEBUG=1"},
     "tests": {"unit_directory": "tests/unit", "pytest_directory": "tests/functional"},
 }
