@@ -12,6 +12,8 @@ class DeviceType(IntEnum):
     NANOX = auto()
     STAX = auto()
     FLEX = auto()
+    APEX_P = auto()
+    APEX_M = auto()
 
 
 @dataclass
