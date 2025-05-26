@@ -26,14 +26,15 @@ use_cases:
   test: DEBUG=1
 tests:
   unit_directory: tests/unit
-  pytest_directory: tests/functional"""
+  pytest_directory: tests/functional
+  pytest_swap_directory: tests/functional"""
 
 FULL_EXPECTED_JSON = {
     "build_directory": ".",
     "sdk": "c",
     "devices": ["nanos+"],
     "use_cases": {"debug": "DEBUG=1", "test": "DEBUG=1"},
-    "tests": {"unit_directory": "tests/unit", "pytest_directory": "tests/functional"},
+    "tests": {"unit_directory": "tests/unit", "pytest_directory": "tests/functional", "pytest_swap_directory": "tests/functional"},
 }
 
 UC_D_EXPECTED_TEXT_CHUNKS = [
@@ -91,6 +92,7 @@ class TestCLIMain(TestCase):
             output_use_cases=None,
             output_tests_unit_directory=False,
             output_tests_pytest_directory=False,
+            output_tests_swap_pytest_directory=None,
             output_tests_dependencies=None,
             json=False,
             url=False,
@@ -150,6 +152,7 @@ class TestCLIMain(TestCase):
         self.args.output_build_directory = True
         self.args.output_tests_unit_directory = True
         self.args.output_tests_pytest_directory = True
+        self.args.output_tests_swap_pytest_directory = True
         self.args.output_use_cases = list()
         self.assertIsNone(main())
         self.assertEqual(FULL_EXPECTED_TEXT, self.text)
@@ -160,6 +163,7 @@ class TestCLIMain(TestCase):
         self.args.output_build_directory = True
         self.args.output_tests_unit_directory = True
         self.args.output_tests_pytest_directory = True
+        self.args.output_tests_swap_pytest_directory = True
         self.args.output_use_cases = list()
         self.args.json = True
         self.assertIsNone(main())
