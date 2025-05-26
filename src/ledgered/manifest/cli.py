@@ -117,6 +117,14 @@ def set_parser() -> ArgumentParser:
         help="outputs the directory of the pytest (functional) tests. Fails if none",
     )
     parser.add_argument(
+        "-otsp",
+        "--output-tests-swap-pytest-directory",
+        required=False,
+        action="store_true",
+        default=False,
+        help="outputs the directory of the pytest (swap) tests. Fails if none",
+    )
+    parser.add_argument(
         "-otd",
         "--output-tests-dependencies",
         required=False,
@@ -213,6 +221,14 @@ def main() -> None:  # pragma: no cover
             logger.error("This manifest does not contains the 'tests.pytest_directory' field")
             sys.exit(2)
         display_content["tests"]["pytest_directory"] = str(repo_manifest.tests.pytest_directory)
+
+    if args.output_tests_swap_pytest_directory:
+        if repo_manifest.tests is None and repo_manifest.tests.swap_pytest_directory is None:
+            logger.error("This manifest does not contains the 'tests.swap_pytest_directory' field")
+            sys.exit(2)
+        display_content["tests"]["pytest_swap_directory"] = str(
+            repo_manifest.tests.swap_pytest_directory
+        )
 
     # cropping down to the latest dict, if previouses only has 1 key so that the output (either text
     # or JSON) is the smallest possible

@@ -80,11 +80,13 @@ class TestsConfig(Jsonable):
 
     unit_directory: Optional[Path]
     pytest_directory: Optional[Path]
+    swap_pytest_directory: Optional[Path]
     dependencies: Optional[JsonDict]
 
     def __init__(
         self,
         pytest_directory: Optional[Union[str, Path]] = None,
+        swap_pytest_directory: Optional[Union[str, Path]] = None,
         unit_directory: Optional[Union[str, Path]] = None,
         dependencies: Optional[Dict[str, List]] = None,
     ) -> None:
@@ -92,6 +94,9 @@ class TestsConfig(Jsonable):
         logger.debug("Parsing test dependencies")
         self.unit_directory = None if unit_directory is None else Path(unit_directory)
         self.pytest_directory = None if pytest_directory is None else Path(pytest_directory)
+        self.swap_pytest_directory = (
+            None if swap_pytest_directory is None else Path(swap_pytest_directory)
+        )
         if dependencies is None:
             self.dependencies = None
         else:
