@@ -223,7 +223,7 @@ def main() -> None:  # pragma: no cover
         display_content["tests"]["pytest_directory"] = str(repo_manifest.tests.pytest_directory)
 
     if args.output_tests_swap_pytest_directory:
-        if repo_manifest.tests is None and repo_manifest.tests.swap_pytest_directory is None:
+        if repo_manifest.tests is None or repo_manifest.tests.swap_pytest_directory is None:
             logger.error("This manifest does not contains the 'tests.swap_pytest_directory' field")
             sys.exit(2)
         display_content["tests"]["pytest_swap_directory"] = str(
