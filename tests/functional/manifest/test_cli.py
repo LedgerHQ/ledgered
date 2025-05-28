@@ -34,7 +34,11 @@ FULL_EXPECTED_JSON = {
     "sdk": "c",
     "devices": ["nanos+"],
     "use_cases": {"debug": "DEBUG=1", "test": "DEBUG=1"},
-    "tests": {"unit_directory": "tests/unit", "pytest_directory": "tests/functional", "pytest_swap_directory": "tests/functional"},
+    "tests": {
+        "unit_directory": "tests/unit",
+        "pytest_directory": "tests/functional",
+        "pytest_swap_directory": "tests/functional",
+    },
 }
 
 UC_D_EXPECTED_TEXT_CHUNKS = [
