@@ -74,11 +74,10 @@ my_variant = "COIN=MY_VARIANT"
 
 This section is optional. It contains metadata used to run application tests.
 
-| Field name              | Description                                                                                    |
-|-------------------------|------------------------------------------------------------------------------------------------|
-| `unit_directory`        | Path of the directory where unit tests can be found                                            |
-| `pytest_directory`      | Path of the directory where functional, Python test can be found (`conftest.py` file expected) |
-| `swap_pytest_directory` | Path of the directory where swap Python test can be found (`conftest.py` file expected)        |
+| Field name              | Description                                                                                       |
+|-------------------------|---------------------------------------------------------------------------------------------------|
+| `unit_directory`        | Path of the directory where unit tests can be found                                               |
+| `pytest_directory`      | Path of the directories where functional, Python tests can be found (`conftest.py` file expected) |
 
 
 #### `[tests.dependencies.<test_use_case>]`
@@ -196,8 +195,6 @@ options:
                         outputs the directory of the unit tests. Fails if none
   -otp, --output-tests-pytest-directory
                         outputs the directory of the pytest (functional) tests. Fails if none
-  -otsp, --output-tests-swap-pytest-directory"
-                        outputs the directory of the pytest (swap) tests. Fails if none
   -otd [OUTPUT_TESTS_DEPENDENCIES ...], --output-tests-dependencies [OUTPUT_TESTS_DEPENDENCIES ...]
                         outputs the given use cases. Fails if none
   -ouc [OUTPUT_USE_CASES ...], --output-use-cases [OUTPUT_USE_CASES ...]

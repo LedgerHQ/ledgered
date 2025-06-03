@@ -98,18 +98,11 @@ class TestTestsConfig(TestCase):
                 {"url": "u2", "ref": "r2", "use_case": "uc2"},
             ],
         }
-        config = TestsConfig(
-            unit_directory=str(ud),
-            pytest_directory=str(pd),
-            swap_pytest_directory=str(pd),
-            dependencies=deps,
-        )
+        config = TestsConfig(unit_directory=str(ud), pytest_directory=str(pd), dependencies=deps)
         self.assertIsNotNone(config.unit_directory)
         self.assertEqual(config.unit_directory, ud)
         self.assertIsNotNone(config.pytest_directory)
         self.assertEqual(config.pytest_directory, pd)
-        self.assertIsNotNone(config.swap_pytest_directory)
-        self.assertEqual(config.swap_pytest_directory, pd)
 
         # package automatically replaces empty use_cases with the default one
         deps["first"][0]["use_case"] = DEFAULT_USE_CASE
@@ -132,14 +125,7 @@ class TestTestsConfig(TestCase):
             self.assertCountEqual(v, deps[k])
 
         # the rest of the json can be compared
-        self.assertDictEqual(
-            result_json,
-            {
-                "unit_directory": str(ud),
-                "pytest_directory": str(pd),
-                "swap_pytest_directory": str(pd),
-            },
-        )
+        self.assertDictEqual(result_json, {"unit_directory": str(ud), "pytest_directory": str(pd)})
 
     def test___init___nok_empty(self):
         config = TestsConfig(**dict())

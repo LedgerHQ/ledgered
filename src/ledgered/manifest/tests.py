@@ -80,13 +80,11 @@ class TestsConfig(Jsonable):
 
     unit_directory: Optional[Path]
     pytest_directory: Optional[Path]
-    swap_pytest_directory: Optional[Path]
     dependencies: Optional[JsonDict]
 
     def __init__(
         self,
         pytest_directory: Optional[Union[str, Path]] = None,
-        swap_pytest_directory: Optional[Union[str, Path]] = None,
         unit_directory: Optional[Union[str, Path]] = None,
         dependencies: Optional[Dict[str, List]] = None,
     ) -> None:
@@ -94,9 +92,6 @@ class TestsConfig(Jsonable):
         logger.debug("Parsing test dependencies")
         self.unit_directory = None if unit_directory is None else Path(unit_directory)
         self.pytest_directory = None if pytest_directory is None else Path(pytest_directory)
-        self.swap_pytest_directory = (
-            None if swap_pytest_directory is None else Path(swap_pytest_directory)
-        )
         if dependencies is None:
             self.dependencies = None
         else:
@@ -106,3 +101,49 @@ class TestsConfig(Jsonable):
             for key, value in dependencies.items():
                 logger.info("Parsing dependencies for '%s' tests", key)
                 self.dependencies[key] = TestsDependenciesConfig(value, self.pytest_directory)
+
+
+@dataclass
+class PyTestsConfig(Jsonable):
+    __test__ = False  # deactivate pytest discovery warning
+
+    key: str
+    directory: Path
+    dependencies: Optional[JsonDict]
+
+    def __init__(
+        self,
+        key: str,
+        directory: Optional[str] = None,
+        dependencies: Optional[Dict] = None,
+    ) -> None:
+        logger = getLogger()
+        logger.debug("Parsing pytests parameters")
+        self.key = key
+
+        if directory is None:
+            raise MissingField("[pytest.*.directory]")
+        else:
+            self.directory = Path(directory)
+            if dependencies is not None:
+                self.dependencies = JsonDict()
+                for key, value in dependencies.items():
+                    logger.info("Parsing dependencies for '%s' tests", key)
+                    self.dependencies[key] = TestsDependenciesConfig(value, self.directory)
+            else:
+                self.dependencies = None
+
+
+@dataclass
+class UnitTestsConfig(Jsonable):
+    __test__ = False  # deactivate pytest discovery warning
+
+    unit_directory: Optional[Path]
+
+    def __init__(
+        self,
+        directory: Optional[Union[str, Path]] = None,
+    ) -> None:
+        logger = getLogger()
+        logger.debug("Parsing unit tests")
+        self.unit_directory = None if directory is None else Path(directory)

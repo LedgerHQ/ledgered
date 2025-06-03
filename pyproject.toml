@@ -33,7 +33,7 @@ dependencies = [
     "pydantic",
     "pyelftools",
     "pygithub",
-    "toml",
+    "tomli",
 ]
 
 [project.optional-dependencies]

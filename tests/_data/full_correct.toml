@@ -10,7 +10,6 @@ test = "DEBUG=1"
 [tests]
 unit_directory = "./tests/unit/"
 pytest_directory = "./tests/functional/"
-swap_pytest_directory = "./tests/functional/"
 
 [tests.dependencies]
 testing_develop = [
