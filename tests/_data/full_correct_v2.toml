@@ -13,17 +13,14 @@ test = "DEBUG=1"
 [unit_tests]
 directory = "./unit-tests/"
 
-[pytest.app]
+[pytest.standalone]
 directory = "tests/"
-
-[pytest.plugin]
-directory = "tests_plugin/"
-[pytest.plugin.dependencies]
-testing_with_latest = [{url = "https://github.com/LedgerHQ/app-ethereum", ref = "develop", use_case = "use_test_keys"}]
-testing_with_prod = [{url = "https://github.com/LedgerHQ/app-ethereum", ref = "master", use_case = "use_test_keys"}]
 
 [pytest.swap]
 directory = "tests_swap/"
 [pytest.swap.dependencies]
-testing_with_latest = [{url = "https://github.com/LedgerHQ/app-exchange", ref = "develop"}]
+testing_with_latest = [
+    {url = "https://github.com/LedgerHQ/app-exchange", ref = "develop"},
+    {url = "https://github.com/LedgerHQ/app-ethereum", ref = "develop"},
+]
 testing_with_prod = [{url = "https://github.com/LedgerHQ/app-exchange", ref = "master"}]

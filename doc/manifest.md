@@ -5,7 +5,7 @@ a `ledger_app.toml` [TOML](https://toml.io/) file.
 This manifest contains application metadata such as build directory, compatible devices and such,
 and is used by several tools to know how to build or test the application.
 
-The `ledgered.utils.manifest` library is used to parse and manipulate application manifests
+The `ledgered.manifest` library is used to parse and manipulate application manifests
 in Python code. `Ledgered` also provides a CLI entrypoint (`ledger-manifest`) to parse, extract
 and check information from manifests.
 

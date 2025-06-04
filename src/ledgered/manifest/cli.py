@@ -113,8 +113,9 @@ def set_parser() -> ArgumentParser:
         "-otp",
         "--output-tests-pytest-directory",
         required=False,
-        action="store_true",
-        default=False,
+        action="store",
+        default=None,
+        nargs="*",
         help="outputs the directories of the pytest (functional) tests. Fails if none",
     )
     parser.add_argument(
@@ -135,6 +136,15 @@ def set_parser() -> ArgumentParser:
         nargs="*",
         help="outputs the given use cases. Fails if none",
     )
+    parser.add_argument(
+        "-i",
+        "--output-information",
+        required=False,
+        action="store_true",
+        default=False,
+        help="outputs the manifest information (version)",
+    )
+
     parser.add_argument(
         "-j", "--json", required=False, action="store_true", help="outputs as JSON rather than text"
     )
@@ -171,6 +181,9 @@ def main() -> None:  # pragma: no cover
     # no check
     logger.info("Displaying manifest info")
     display_content: Dict = defaultdict(dict)
+
+    if args.output_information:
+        display_content["version"] = repo_manifest.version
 
     if args.output_build_directory:
         display_content["build_directory"] = str(repo_manifest.app.build_directory)
@@ -211,11 +224,15 @@ def main() -> None:  # pragma: no cover
                         sys.exit(2)
                     display_content["tests"]["dependencies"] = dependencies
                 elif isinstance(test_config, PyTestsConfig):
+                    if len(args.output_tests_dependencies) >= 1:
+                        if test_config.key != args.output_tests_dependencies[0]:
+                            continue
+                    display_content["pytests"][test_config.key] = defaultdict(dict)
                     dependencies = dict()
                     if test_config.dependencies is not None:
                         dependencies = test_config.dependencies.json
                     non_empty = len(dependencies) > 0
-                    if len(args.output_tests_dependencies) != 0:
+                    if len(args.output_tests_dependencies[1:]) != 0:
                         dependencies = {
                             k: v
                             for (k, v) in dependencies.items()
@@ -246,7 +263,7 @@ def main() -> None:  # pragma: no cover
             else:
                 display_content["unit_tests"] = str(repo_manifest.unit_tests.unit_directory)
 
-    if args.output_tests_pytest_directory:
+    if args.output_tests_pytest_directory is not None:
         if len(repo_manifest.pytests) == 0:
             logger.error(
                 "This manifest does not contains any [tests] (manifest version = 1) or [pytests] (manifest version > 1) field"
@@ -257,6 +274,9 @@ def main() -> None:  # pragma: no cover
                 if isinstance(test_config, TestsConfig):
                     display_content["tests"]["pytest_directory"] = str(test_config.pytest_directory)
                 elif isinstance(test_config, PyTestsConfig):
+                    if len(args.output_tests_pytest_directory) == 1:
+                        if test_config.key != args.output_tests_pytest_directory[0]:
+                            continue
                     display_content["pytests"][test_config.key] = str(test_config.directory)
 
     # cropping down to the latest dict, if previouses only has 1 key so that the output (either text
