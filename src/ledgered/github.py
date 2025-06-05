@@ -1,6 +1,6 @@
 from enum import IntEnum, auto
 from github import ContentFile as PyContentFile, Github as PyGithub, Repository as PyRepository
-from github.GithubException import UnknownObjectException
+from github.GithubException import UnknownObjectException, GithubException
 from pathlib import Path
 from typing import List, Optional
 from unittest.mock import patch
@@ -39,6 +39,10 @@ class AppRepository(PyRepository.Repository):
         if self._manifest is None:
             try:
                 manifest = self.get_contents(MANIFEST_FILE_NAME, ref=self.current_branch)
+            except GithubException as e:
+                if e.status == 404:
+                    raise NoManifestException(self)
+                raise e
             except UnknownObjectException as e:
                 if e.status == 404:
                     raise NoManifestException(self)
@@ -146,7 +150,7 @@ class GitHubApps(list):
         exclude_list: Optional[List[str]] = None,
         sdk: Optional[List[str]] = None,
     ) -> "GitHubApps":
-        new_list = [i for i in self]
+        new_list: List[AppRepository] = [i for i in self]
         # only_list filtering (takes precedence on exclude_list)
         if only_list:
             new_list = [r for r in new_list if r.name in only_list]
