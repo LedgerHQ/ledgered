@@ -90,7 +90,7 @@ class TestCLIMain(TestCase):
             output_devices=False,
             output_use_cases=None,
             output_tests_unit_directory=False,
-            output_tests_pytest_directory=False,
+            output_tests_pytest_directory=None,
             output_tests_dependencies=None,
             json=False,
             url=False,
@@ -149,7 +149,7 @@ class TestCLIMain(TestCase):
         self.args.output_devices = True
         self.args.output_build_directory = True
         self.args.output_tests_unit_directory = True
-        self.args.output_tests_pytest_directory = True
+        self.args.output_tests_pytest_directory = list()
         self.args.output_use_cases = list()
         self.assertIsNone(main())
         self.assertEqual(FULL_EXPECTED_TEXT, self.text)
@@ -159,7 +159,7 @@ class TestCLIMain(TestCase):
         self.args.output_devices = True
         self.args.output_build_directory = True
         self.args.output_tests_unit_directory = True
-        self.args.output_tests_pytest_directory = True
+        self.args.output_tests_pytest_directory = list()
         self.args.output_use_cases = list()
         self.args.json = True
         self.assertIsNone(main())
@@ -211,7 +211,7 @@ class TestCLIMain(TestCase):
     def test_error_inexisting_tests_pytest_directory(self):
         self.args.source = TEST_MANIFEST_DIRECTORY / "minimal.toml"
         # non existing unit directory
-        self.args.output_tests_pytest_directory = True
+        self.args.output_tests_pytest_directory = list()
         with self.assertRaises(SystemExit):
             main()
 

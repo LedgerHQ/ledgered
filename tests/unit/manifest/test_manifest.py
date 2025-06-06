@@ -14,9 +14,9 @@ class TestManifest(TestCase):
         self.assertTrue(manifest.app.is_rust)
         self.assertFalse(manifest.app.is_c)
 
-        self.assertIsInstance(manifest.tests, TestsConfig)
-        self.assertEqual(manifest.tests.unit_directory, Path("unit"))
-        self.assertEqual(manifest.tests.pytest_directory, Path("pytest"))
+        self.assertIsInstance(manifest.pytests[0], TestsConfig)
+        self.assertEqual(manifest.pytests[0].unit_directory, Path("unit"))
+        self.assertEqual(manifest.pytests[0].pytest_directory, Path("pytest"))
 
     def test___init__ok(self):
         app = {"sdk": "rust", "devices": ["NANOS", "stAX", "flex"], "build_directory": ""}
@@ -32,7 +32,7 @@ class TestManifest(TestCase):
             Manifest.from_path(Path("/not/existing/path"))
 
     def test_from_io_ok(self):
-        with (TEST_MANIFEST_DIRECTORY / MANIFEST_FILE_NAME).open() as manifest_io:
+        with (TEST_MANIFEST_DIRECTORY / MANIFEST_FILE_NAME).open("rb") as manifest_io:
             self.check_ledger_app_toml(Manifest.from_io(manifest_io))
 
     def test_from_string_ok(self):

@@ -4,11 +4,12 @@ import sys
 from argparse import ArgumentParser
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict
+from typing import Dict, cast
 
 from .constants import MANIFEST_FILE_NAME
 from ..github import GitHubLedgerHQ
 from .manifest import Manifest
+from .tests import TestsConfig, PyTestsConfig
 from .utils import getLogger
 
 
@@ -112,9 +113,10 @@ def set_parser() -> ArgumentParser:
         "-otp",
         "--output-tests-pytest-directory",
         required=False,
-        action="store_true",
-        default=False,
-        help="outputs the directory of the pytest (functional) tests. Fails if none",
+        action="store",
+        default=None,
+        nargs="*",
+        help="outputs the directories of the pytest (functional) tests. Fails if none",
     )
     parser.add_argument(
         "-otd",
@@ -190,29 +192,83 @@ def main() -> None:  # pragma: no cover
         display_content["use_cases"] = use_cases
 
     if args.output_tests_dependencies is not None:
-        dependencies = dict()
-        if repo_manifest.tests is not None and repo_manifest.tests.dependencies is not None:
-            dependencies = repo_manifest.tests.dependencies.json
-        non_empty = len(dependencies) > 0
-        if len(args.output_tests_dependencies) != 0:
-            dependencies = {
-                k: v for (k, v) in dependencies.items() if k in args.output_tests_dependencies
-            }
-        if not len(dependencies) and non_empty:
-            logger.error("No use case match these ones: '%s'", args.output_tests_dependencies)
-            sys.exit(2)
-        display_content["tests"]["dependencies"] = dependencies
+        if len(repo_manifest.pytests) != 0:
+            for test_config in repo_manifest.pytests:
+                if isinstance(test_config, TestsConfig):
+                    dependencies = dict()
+                    if test_config.dependencies is not None:
+                        dependencies = test_config.dependencies.json
+                    non_empty = len(dependencies) > 0
+                    if len(args.output_tests_dependencies) != 0:
+                        dependencies = {
+                            k: v
+                            for (k, v) in dependencies.items()
+                            if k in args.output_tests_dependencies
+                        }
+                    if not len(dependencies) and non_empty:
+                        logger.error(
+                            "No use case match these ones: '%s'", args.output_tests_dependencies
+                        )
+                        sys.exit(2)
+                    display_content["tests"]["dependencies"] = dependencies
+                elif isinstance(test_config, PyTestsConfig):
+                    if len(args.output_tests_dependencies) >= 1:
+                        if test_config.key != args.output_tests_dependencies[0]:
+                            continue
+                    display_content["pytests"][test_config.key] = defaultdict(dict)
+                    dependencies = dict()
+                    if test_config.dependencies is not None:
+                        dependencies = test_config.dependencies.json
+                    non_empty = len(dependencies) > 0
+                    if len(args.output_tests_dependencies[1:]) != 0:
+                        dependencies = {
+                            k: v
+                            for (k, v) in dependencies.items()
+                            if k in args.output_tests_dependencies
+                        }
+                    if not len(dependencies) and non_empty:
+                        logger.error(
+                            "No use case match these ones: '%s'", args.output_tests_dependencies
+                        )
+                        sys.exit(2)
+                    display_content["pytests"][test_config.key]["dependencies"] = dependencies
 
     if args.output_tests_unit_directory:
-        if repo_manifest.tests is None or repo_manifest.tests.unit_directory is None:
-            logger.error("This manifest does not contains the 'tests.unit_directory' field")
+        if repo_manifest.unit_tests is None and (
+            len(repo_manifest.pytests) == 0
+            or cast(TestsConfig, repo_manifest.pytests[0]).unit_directory is None
+        ):
+            logger.error("This manifest does not contains the 'unit_tests.directory' field")
             sys.exit(2)
-        display_content["tests"]["unit_directory"] = str(repo_manifest.tests.unit_directory)
-    if args.output_tests_pytest_directory:
-        if repo_manifest.tests is None or repo_manifest.tests.pytest_directory is None:
-            logger.error("This manifest does not contains the 'tests.pytest_directory' field")
+        else:
+            if repo_manifest.unit_tests is not None:
+                display_content["unit_tests"] = str(repo_manifest.unit_tests.unit_directory)
+            else:
+                display_content["tests"]["unit_directory"] = str(
+                    cast(TestsConfig, repo_manifest.pytests[0]).unit_directory
+                )
+
+    if args.output_tests_pytest_directory is not None:
+        if len(repo_manifest.pytests) == 0:
+            logger.error(
+                "This manifest does not contains any [tests] (manifest version = 1) or [pytests] (manifest version > 1) field"
+            )
             sys.exit(2)
-        display_content["tests"]["pytest_directory"] = str(repo_manifest.tests.pytest_directory)
+        else:
+            for test_config in repo_manifest.pytests:
+                if isinstance(test_config, TestsConfig):
+                    display_content["tests"]["pytest_directory"] = str(test_config.pytest_directory)
+                elif isinstance(test_config, PyTestsConfig):
+                    if len(args.output_tests_pytest_directory) == 1:
+                        if test_config.key != args.output_tests_pytest_directory[0]:
+                            continue
+                    display_content["pytests"][test_config.key] = defaultdict(dict)
+                    display_content["pytests"][test_config.key]["directory"] = str(
+                        test_config.directory
+                    )
+                    display_content["pytests"][test_config.key]["use_case"] = str(
+                        test_config.self_use_case
+                    )
 
     # cropping down to the latest dict, if previouses only has 1 key so that the output (either text
     # or JSON) is the smallest possible

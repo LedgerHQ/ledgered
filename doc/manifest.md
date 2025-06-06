@@ -5,13 +5,15 @@ a `ledger_app.toml` [TOML](https://toml.io/) file.
 This manifest contains application metadata such as build directory, compatible devices and such,
 and is used by several tools to know how to build or test the application.
 
-The `ledgered.utils.manifest` library is used to parse and manipulate application manifests
+The `ledgered.manifest` library is used to parse and manipulate application manifests
 in Python code. `Ledgered` also provides a CLI entrypoint (`ledger-manifest`) to parse, extract
 and check information from manifests.
 
 ## Manifest content
 
-### Example
+### Version 1
+> [!WARNING]  
+> DEPRECATED
 
 Example of `ledger_app.toml` manifest from the [boilerplate application](https://github.com/LedgerHQ/app-boilerplate)
 
@@ -36,9 +38,44 @@ testing_develop = [
 ]
 ```
 
+### Version 2
+
+Example of `ledger_app.toml` v2 manifest 
+
+```toml
+[app]
+build_directory = "./"
+sdk = "C"
+devices = ["nanox", "nanos+", "stax", "flex"]
+
+[use_cases]
+debug = "DEBUG=1"
+test = "DEBUG=1"
+test_with_feature_activated = "TEST_FLAG_TO_SET=1"
+
+[unit_tests]
+directory = "./unit-tests/"
+
+[pytest.standalone]
+directory = "tests/"
+
+[pytest.swap]
+directory = "tests_swap/"
+self_use_case = "test_with_feature_activated"
+[pytest.swap.dependencies]
+testing_with_latest = [
+    {url = "https://github.com/LedgerHQ/app-exchange", ref = "develop", use_case="dbg_use_test_keys"},
+    {url = "https://github.com/LedgerHQ/app-ethereum", ref = "develop", use_case="use_test_keys"},
+]
+testing_with_prod = [
+  {url = "https://github.com/LedgerHQ/app-exchange", ref = "master"},
+  {url = "https://github.com/LedgerHQ/app-ethereum", ref = "master"}
+]
+```
+
 ### Sections
 
-#### `[app]`
+#### `[app]` (all version)
 
 This section and all its fields are required. It contains metadata helping to build the application.
 
@@ -48,7 +85,7 @@ This section and all its fields are required. It contains metadata helping to bu
 | `build_directory` | Path of the build directory (i.e the directory where the `Makefile` or `Cargo.toml` file can be found) |
 | `devices`         | The list of devices on which the application can be built.                                             |
 
-#### `[use_cases]`
+#### `[use_cases]` (all version)
 
 This section is optional. It contains metadata helping select build options depending on use cases
 The VSCode extension leverages this section to provide alternative build targets.
@@ -70,16 +107,22 @@ test = "TESTING=1 TEST_PUBLIC_KEY=1"
 my_variant = "COIN=MY_VARIANT"
 ```
 
-#### `[tests]`
+#### `[tests]` (version 1)
+> [!WARNING]  
+> Deprecated
+
 
 This section is optional. It contains metadata used to run application tests.
 
-| Field name         | Description                                                                                    |
-|--------------------|------------------------------------------------------------------------------------------------|
-| `unit_directory`   | Path of the directory where unit tests can be found                                            |
-| `pytest_directory` | Path of the directory where functional, Python test can be found (`conftest.py` file expected) |
+| Field name              | Description                                                                                       |
+|-------------------------|---------------------------------------------------------------------------------------------------|
+| `unit_directory`        | Path of the directory where unit tests can be found                                               |
+| `pytest_directory`      | Path of the directories where functional, Python tests can be found (`conftest.py` file expected) |
 
-#### `[tests.dependencies.<test_use_case>]`
+
+#### `[tests.dependencies.<test_use_case>]` (version 1)
+> [!WARNING]  
+> Deprecated
 
 The tests.dependencies.* sections are optional. They contain a list of apps metadata helping building side applications needed for your tests.
 You can define as many as you need.
@@ -133,6 +176,28 @@ testing_with_latest = [
 > This field will be used in order for ledgered to generate a deterministic path for every dependency.
 > Currently, this path is `<pytest_directory>/.dependencies/<repo_name>-<ref>-<use_case>`.
 
+#### `[unit_tests]` (version >= 2 only)
+
+This section is optional. It contains metadata used to run application tests.
+
+| Field name              | Description                                                                                       |
+|-------------------------|---------------------------------------------------------------------------------------------------|
+| `directory`             | Path of the directory where unit tests can be found                                               |
+
+#### `[pytest.*]` (version >= 2 only)
+
+This section is optional. It contains metadata used to run application pytests.
+
+| Field name              | Description                                                                                       |
+|-------------------------|---------------------------------------------------------------------------------------------------|
+| `directory`             | Path of the directories where functional, Python tests can be found (`conftest.py` file expected) |
+| `self_use_case`         | use case to use when running the tests                                                            |
+
+##### `[pytest.*.dependencies]` (version >= 2 only)
+
+The pytest.*.dependencies sections are optional. They contain a list of apps metadata helping building side applications needed for your tests. You can define as many as you need.
+
+See [above](#[tests.dependencies.<test-use-case>]-(version-1))
 
 ### Relations with the [reusable workflows](https://github.com/LedgerHQ/ledger-app-workflows/)
 
