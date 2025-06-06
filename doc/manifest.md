@@ -12,6 +12,8 @@ and check information from manifests.
 ## Manifest content
 
 ### Version 1
+> [!WARNING]  
+> DEPRECATED
 
 Example of `ledger_app.toml` manifest from the [boilerplate application](https://github.com/LedgerHQ/app-boilerplate)
 
@@ -52,6 +54,7 @@ devices = ["nanox", "nanos+", "stax", "flex"]
 [use_cases]
 debug = "DEBUG=1"
 test = "DEBUG=1"
+test_with_feature_activated = "TEST_FLAG_TO_SET=1"
 
 [unit_tests]
 directory = "./unit-tests/"
@@ -61,10 +64,11 @@ directory = "tests/"
 
 [pytest.swap]
 directory = "tests_swap/"
+self_use_case = "test_with_feature_activated"
 [pytest.swap.dependencies]
 testing_with_latest = [
-    {url = "https://github.com/LedgerHQ/app-exchange", ref = "develop"},
-    {url = "https://github.com/LedgerHQ/app-ethereum", ref = "develop"},
+    {url = "https://github.com/LedgerHQ/app-exchange", ref = "develop", use_case="dbg_use_test_keys"},
+    {url = "https://github.com/LedgerHQ/app-ethereum", ref = "develop", use_case="use_test_keys"},
 ]
 testing_with_prod = [
   {url = "https://github.com/LedgerHQ/app-exchange", ref = "master"},
@@ -118,6 +122,9 @@ my_variant = "COIN=MY_VARIANT"
 ```
 
 #### `[tests]` (version 1)
+> [!WARNING]  
+> Deprecated
+
 
 This section is optional. It contains metadata used to run application tests.
 
@@ -128,6 +135,8 @@ This section is optional. It contains metadata used to run application tests.
 
 
 #### `[tests.dependencies.<test_use_case>]` (version 1)
+> [!WARNING]  
+> Deprecated
 
 The tests.dependencies.* sections are optional. They contain a list of apps metadata helping building side applications needed for your tests.
 You can define as many as you need.
@@ -196,6 +205,7 @@ This section is optional. It contains metadata used to run application pytests.
 | Field name              | Description                                                                                       |
 |-------------------------|---------------------------------------------------------------------------------------------------|
 | `directory`             | Path of the directories where functional, Python tests can be found (`conftest.py` file expected) |
+| `self_use_case`         | use case to use when running the tests                                                            |
 
 ##### `[pytest.*.dependencies]` (version >= 2 only)
 

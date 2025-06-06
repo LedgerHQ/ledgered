@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Manage swap tests directory in app's Manifest `ledger_app.toml`
+- Manifest v2 support
+- Manage several tests directories in app's Manifest v2 `ledger_app.toml`
 
 ## [0.11.1] - 2025-06-05
 
