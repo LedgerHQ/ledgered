@@ -137,15 +137,6 @@ def set_parser() -> ArgumentParser:
         help="outputs the given use cases. Fails if none",
     )
     parser.add_argument(
-        "-i",
-        "--output-information",
-        required=False,
-        action="store_true",
-        default=False,
-        help="outputs the manifest information (version)",
-    )
-
-    parser.add_argument(
         "-j", "--json", required=False, action="store_true", help="outputs as JSON rather than text"
     )
     return parser
@@ -181,9 +172,6 @@ def main() -> None:  # pragma: no cover
     # no check
     logger.info("Displaying manifest info")
     display_content: Dict = defaultdict(dict)
-
-    if args.output_information:
-        display_content["version"] = repo_manifest.version
 
     if args.output_build_directory:
         display_content["build_directory"] = str(repo_manifest.app.build_directory)
@@ -246,22 +234,19 @@ def main() -> None:  # pragma: no cover
                     display_content["pytests"][test_config.key]["dependencies"] = dependencies
 
     if args.output_tests_unit_directory:
-        if repo_manifest.version == 1:
-            if (
-                len(repo_manifest.pytests) == 0
-                or cast(TestsConfig, repo_manifest.pytests[0]).unit_directory is None
-            ):
-                logger.error("This manifest does not contains the 'tests.unit_directory' field")
-                sys.exit(2)
-            display_content["tests"]["unit_directory"] = str(
-                cast(TestsConfig, repo_manifest.pytests[0]).unit_directory
-            )
+        if repo_manifest.unit_tests is None and (
+            len(repo_manifest.pytests) == 0
+            or cast(TestsConfig, repo_manifest.pytests[0]).unit_directory is None
+        ):
+            logger.error("This manifest does not contains the 'unit_tests.directory' field")
+            sys.exit(2)
         else:
-            if repo_manifest.unit_tests is None:
-                logger.error("This manifest does not contains the 'unit_tests.directory' field")
-                sys.exit(2)
-            else:
+            if repo_manifest.unit_tests is not None:
                 display_content["unit_tests"] = str(repo_manifest.unit_tests.unit_directory)
+            else:
+                display_content["tests"]["unit_directory"] = str(
+                    cast(TestsConfig, repo_manifest.pytests[0]).unit_directory
+                )
 
     if args.output_tests_pytest_directory is not None:
         if len(repo_manifest.pytests) == 0:
@@ -278,8 +263,12 @@ def main() -> None:  # pragma: no cover
                         if test_config.key != args.output_tests_pytest_directory[0]:
                             continue
                     display_content["pytests"][test_config.key] = defaultdict(dict)
-                    display_content["pytests"][test_config.key]["directory"] = str(test_config.directory)
-                    display_content["pytests"][test_config.key]["use_case"] = str(test_config.self_use_case)
+                    display_content["pytests"][test_config.key]["directory"] = str(
+                        test_config.directory
+                    )
+                    display_content["pytests"][test_config.key]["use_case"] = str(
+                        test_config.self_use_case
+                    )
 
     # cropping down to the latest dict, if previouses only has 1 key so that the output (either text
     # or JSON) is the smallest possible

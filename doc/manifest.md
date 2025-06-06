@@ -43,9 +43,6 @@ testing_develop = [
 Example of `ledger_app.toml` v2 manifest 
 
 ```toml
-[info]
-version = 2
-
 [app]
 build_directory = "./"
 sdk = "C"
@@ -77,17 +74,6 @@ testing_with_prod = [
 ```
 
 ### Sections
-
-#### `[info]` (version >= 2 only)
-
-This section is required. It contains version information.
-
-| Field name        | Description                                                                                            |
-|-------------------|--------------------------------------------------------------------------------------------------------|
-| `version`         | The version of the Manifest                                                                            |
-
-> [!WARNING]
-> For manifest version 1, this section is not present thus it is assumed by `ledgered.manifest.manifest` that version is 1.
 
 #### `[app]` (all version)
 
@@ -264,8 +250,6 @@ options:
   -v, --verbose
   -c CHECK, --check CHECK
                         Check the manifest content against the provided directory.
-  -i, --output-information
-                        outputs the Manifest version
   -os, --output-sdk     outputs the SDK type
   -ob, --output-build-directory
                         outputs the build directory (where the Makefile in C app, or the Cargo.toml in Rust app is expected to be)

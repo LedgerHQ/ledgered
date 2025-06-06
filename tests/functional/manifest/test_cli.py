@@ -85,7 +85,6 @@ class TestCLIMain(TestCase):
             check=None,
             verbose=0,
             token=None,
-            output_information=False,
             output_build_directory=False,
             output_sdk=False,
             output_devices=False,

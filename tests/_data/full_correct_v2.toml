@@ -1,6 +1,3 @@
-[info]
-version = 2
-
 [app]
 build_directory = "./"
 sdk = "C"

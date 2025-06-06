@@ -13,7 +13,6 @@ from .use_cases import UseCasesConfig
 
 @dataclass
 class Manifest(Jsonable):
-    version: int
     app: AppConfig
     use_cases: Optional[UseCasesConfig]
     unit_tests: Optional[UnitTestsConfig]
@@ -23,29 +22,25 @@ class Manifest(Jsonable):
         self,
         app: Dict,
         tests: Optional[Dict] = None,  # keep the old tests name for backward compatibility
-        info: Optional[Dict] = None,
         pytest: Optional[Dict] = None,
         unit_tests: Optional[Dict] = None,
         use_cases: Optional[Dict] = None,
     ) -> None:
-        if info is not None:
-            self.version = info["version"]
-        else:
-            self.version = 1
-
         self.app = AppConfig(**app)
         self.use_cases = None if use_cases is None else UseCasesConfig(**use_cases)
         self.pytests = []
 
-        if self.version == 1:
-            if tests is not None:
-                self.pytests.append(TestsConfig(**tests))
-            self.unit_tests = None
+        if tests is not None:
+            self.pytests.append(TestsConfig(**tests))
+
+        if pytest is not None:
+            for key in list(pytest):
+                self.pytests.append(PyTestsConfig(key=key, **pytest[key]))
+
+        if unit_tests is not None:
+            self.unit_tests = UnitTestsConfig(**unit_tests)
         else:
-            if pytest is not None:
-                for key in list(pytest):
-                    self.pytests.append(PyTestsConfig(key=key, **pytest[key]))
-            self.unit_tests = None if unit_tests is None else UnitTestsConfig(**unit_tests)
+            self.unit_tests = None
 
     @classmethod
     def from_string(cls, content: str) -> "Manifest":
