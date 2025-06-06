@@ -109,12 +109,14 @@ class PyTestsConfig(Jsonable):
 
     key: str
     directory: Path
+    self_use_case: Optional[str]
     dependencies: Optional[JsonDict]
 
     def __init__(
         self,
         key: str,
         directory: Optional[str] = None,
+        self_use_case: Optional[str] = None,
         dependencies: Optional[Dict] = None,
     ) -> None:
         logger = getLogger()
@@ -125,6 +127,7 @@ class PyTestsConfig(Jsonable):
             raise MissingField("[pytest.*.directory]")
         else:
             self.directory = Path(directory)
+            self.self_use_case = self_use_case or DEFAULT_USE_CASE
             if dependencies is not None:
                 self.dependencies = JsonDict()
                 for key, value in dependencies.items():

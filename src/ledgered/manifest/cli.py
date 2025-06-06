@@ -277,7 +277,9 @@ def main() -> None:  # pragma: no cover
                     if len(args.output_tests_pytest_directory) == 1:
                         if test_config.key != args.output_tests_pytest_directory[0]:
                             continue
-                    display_content["pytests"][test_config.key] = str(test_config.directory)
+                    display_content["pytests"][test_config.key] = defaultdict(dict)
+                    display_content["pytests"][test_config.key]["directory"] = str(test_config.directory)
+                    display_content["pytests"][test_config.key]["use_case"] = str(test_config.self_use_case)
 
     # cropping down to the latest dict, if previouses only has 1 key so that the output (either text
     # or JSON) is the smallest possible
