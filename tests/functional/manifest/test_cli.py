@@ -157,9 +157,7 @@ class TestCLIMain(TestCase):
         self.args.source = TEST_MANIFEST_DIRECTORY / "one_leaf.toml"
         self.args.output_pytest_dependency = list()
         expected_text = """pytests_dependencies: ['testing_develop']"""
-        expected_json = {
-            "pytests_dependencies": ["testing_develop"]
-        }
+        expected_json = {"pytests_dependencies": ["testing_develop"]}
         self.assertIsNone(main())
         self.assertEqual(self.text, expected_text)
 

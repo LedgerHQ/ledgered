@@ -193,16 +193,16 @@ def main() -> None:  # pragma: no cover
                 dependencies = list()
                 if test_config.dependencies is not None:
                     dependencies = list(test_config.dependencies)
-                if len(args.output_pytest_dependency) >= 1:
-                    if idx != int(args.output_pytest_dependency[0]):
-                        continue          
-                if len(args.output_pytest_dependency) == 2:
-                    for k, v in test_config.dependencies.json.items():
-                        if k != args.output_pytest_dependency[1]:
+                    if len(args.output_pytest_dependency) >= 1:
+                        if idx != int(args.output_pytest_dependency[0]):
                             continue
-                        display_content["pytests_dependencies"].append(v)
-                else:
-                    display_content["pytests_dependencies"].append(dependencies)
+                    if len(args.output_pytest_dependency) == 2:
+                        for k, v in test_config.dependencies.json.items():
+                            if k != args.output_pytest_dependency[1]:
+                                continue
+                            display_content["pytests_dependencies"].append(v)
+                    else:
+                        display_content["pytests_dependencies"].append(dependencies)
             # if there is only one list of dependencies, we remove the list
             if len(display_content["pytests_dependencies"]) == 1:
                 display_content["pytests_dependencies"] = display_content["pytests_dependencies"][0]
@@ -232,7 +232,7 @@ def main() -> None:  # pragma: no cover
             )
             sys.exit(2)
         else:
-            display_content["pytest_directories"]=list()
+            display_content["pytest_directories"] = list()
             for idx, test_config in enumerate(repo_manifest.pytests):
                 if isinstance(test_config, TestsConfig):
                     display_content["pytest_directories"].append(str(test_config.pytest_directory))
@@ -249,7 +249,7 @@ def main() -> None:  # pragma: no cover
             )
             sys.exit(2)
         else:
-            display_content["pytest_usecases"]=list()
+            display_content["pytest_usecases"] = list()
             for idx, test_config in enumerate(repo_manifest.pytests):
                 if isinstance(test_config, TestsConfig):
                     continue
@@ -258,7 +258,6 @@ def main() -> None:  # pragma: no cover
                         if idx != int(args.output_pytest_usecase[0]):
                             continue
                     display_content["pytest_usecases"].append(str(test_config.self_use_case))
-    
 
     # cropping down to the latest dict, if previouses only has 1 key so that the output (either text
     # or JSON) is the smallest possible
