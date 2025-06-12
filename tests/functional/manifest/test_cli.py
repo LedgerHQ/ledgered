@@ -19,12 +19,14 @@ class PrintMock(MagicMock):
 
 FULL_EXPECTED_TEXT = """build_directory: .
 sdk: c
-devices: ['nanos+']
+devices:
+0. nanos+
 use_cases:
   debug: DEBUG=1
   test: DEBUG=1
 unittest_directory: tests/unit
-pytest_directories: ['tests/functional']"""
+pytest_directories:
+0. tests/functional"""
 
 FULL_EXPECTED_JSON = {
     "build_directory": ".",
@@ -39,7 +41,8 @@ UC_D_EXPECTED_TEXT_CHUNKS = [
     """use_cases:
   debug: DEBUG=1
   test: DEBUG=1
-pytests_dependencies: ['testing_develop']"""
+pytests_dependencies:
+0. testing_develop"""
 ]
 
 UC_D_EXPECTED_JSON = {
@@ -126,7 +129,7 @@ class TestCLIMain(TestCase):
     def test_single_field(self):
         self.args.output_sdk = True
         self.assertIsNone(main())
-        self.assertEqual(self.text, "sdk: c")
+        self.assertEqual(self.text, "c")
 
         self.args.json = True
         self.assertIsNone(main())
@@ -156,7 +159,8 @@ class TestCLIMain(TestCase):
     def test_single_leaf(self):
         self.args.source = TEST_MANIFEST_DIRECTORY / "one_leaf.toml"
         self.args.output_pytest_dependency = list()
-        expected_text = """pytests_dependencies: ['testing_develop']"""
+        expected_text = """pytests_dependencies:
+0. testing_develop"""
         expected_json = {"pytests_dependencies": ["testing_develop"]}
         self.assertIsNone(main())
         self.assertEqual(self.text, expected_text)

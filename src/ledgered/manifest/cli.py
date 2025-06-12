@@ -19,14 +19,20 @@ def text_output(content: Dict, indent: int = 0) -> None:
         if isinstance(v, (dict, list, set, tuple)):
             content = {k: v}
         else:
-            print(f"{' ' * 2 * indent}{k}: {v}")
+            print(v)
             return
     for key, value in content.items():
         if isinstance(value, dict):
             print(f"{' ' * 2 * indent}{key}:")
             text_output(value, indent=indent + 1)
         elif isinstance(value, (list, set, tuple)):
-            print(f"{' ' * 2 * indent}{key}: {value}")
+            print(f"{' ' * 2 * indent}{key}:")
+            for i, element in enumerate(value):
+                if isinstance(element, dict):
+                    print(f"{' ' * (2 * indent + 1)}{i}.")
+                    text_output(element, indent=indent + 1)
+                else:
+                    print(f"{' ' * 2 * indent}{i}. {element}")
         else:
             print(f"{' ' * 2 * indent}{key}: {value}")
 
@@ -71,6 +77,7 @@ def set_parser() -> ArgumentParser:
         help="Tells if the `manifest` should be fetched from `github.com` rather than a file",
     )
     parser.add_argument(
+        "-os",
         "--output-sdk",
         required=False,
         action="store_true",
@@ -78,6 +85,7 @@ def set_parser() -> ArgumentParser:
         help="outputs the SDK type",
     )
     parser.add_argument(
+        "-ob",
         "--output-build-directory",
         required=False,
         action="store_true",
@@ -86,6 +94,7 @@ def set_parser() -> ArgumentParser:
         "Cargo.toml in Rust app is expected to be)",
     )
     parser.add_argument(
+        "-od",
         "--output-devices",
         required=False,
         action="store_true",
@@ -93,6 +102,7 @@ def set_parser() -> ArgumentParser:
         help="outputs the list of devices supported by the application",
     )
     parser.add_argument(
+        "-ouc",
         "--output-usecase",
         required=False,
         default=None,
@@ -101,6 +111,7 @@ def set_parser() -> ArgumentParser:
         help="outputs the use cases. Fails if none",
     )
     parser.add_argument(
+        "-otu",
         "--output-unittest-directory",
         required=False,
         action="store_true",
@@ -108,6 +119,7 @@ def set_parser() -> ArgumentParser:
         help="outputs the directory of the unit tests. Fails if none",
     )
     parser.add_argument(
+        "-otp",
         "--output-pytest-directory",
         required=False,
         action="store",
@@ -124,6 +136,7 @@ def set_parser() -> ArgumentParser:
         help="outputs the usecases of the pytest (functional) tests. Fails if none",
     )
     parser.add_argument(
+        "-otd",
         "--output-pytest-dependency",
         required=False,
         action="store",
@@ -173,6 +186,7 @@ def main() -> None:  # pragma: no cover
 
     if args.output_sdk:
         display_content["sdk"] = repo_manifest.app.sdk
+
     if args.output_devices:
         display_content["devices"] = list(repo_manifest.app.devices)
 
