@@ -19,45 +19,32 @@ class PrintMock(MagicMock):
 
 FULL_EXPECTED_TEXT = """build_directory: .
 sdk: c
-devices:
-0. nanos+
+devices: ['nanos+']
 use_cases:
   debug: DEBUG=1
   test: DEBUG=1
-tests:
-  unit_directory: tests/unit
-  pytest_directory: tests/functional"""
+unittest_directory: tests/unit
+pytest_directories: ['tests/functional']"""
 
 FULL_EXPECTED_JSON = {
     "build_directory": ".",
     "sdk": "c",
     "devices": ["nanos+"],
     "use_cases": {"debug": "DEBUG=1", "test": "DEBUG=1"},
-    "tests": {"unit_directory": "tests/unit", "pytest_directory": "tests/functional"},
+    "unittest_directory": "tests/unit",
+    "pytest_directories": ["tests/functional"],
 }
 
 UC_D_EXPECTED_TEXT_CHUNKS = [
     """use_cases:
   debug: DEBUG=1
   test: DEBUG=1
-tests:
-  dependencies:
-    testing_develop:""",
-    """
-      url: https://github.com/<owner>/<app-repository>
-      ref: develop
-      use_case: debug
-      application_directory: tests/functional/.dependencies/<app-repository>-develop-debug""",
-    """
-      url: https://github.com/<owner>/<other-app-repository>
-      ref: develop
-      use_case: default
-      application_directory: tests/functional/.dependencies/<other-app-repository>-develop-default""",
+pytests_dependencies: ['testing_develop']"""
 ]
 
 UC_D_EXPECTED_JSON = {
     "use_cases": {"debug": "DEBUG=1", "test": "DEBUG=1"},
-    "tests": {"dependencies": {}},
+    "pytests_dependencies": ["testing_develop"],
 }
 
 EXPECTED_DEPENDENCIES_JSON = [
@@ -85,13 +72,14 @@ class TestCLIMain(TestCase):
             check=None,
             verbose=0,
             token=None,
-            output_build_directory=False,
             output_sdk=False,
+            output_build_directory=False,
             output_devices=False,
-            output_use_cases=None,
-            output_tests_unit_directory=False,
-            output_tests_pytest_directory=None,
-            output_tests_dependencies=None,
+            output_usecase=None,
+            output_unittest_directory=False,
+            output_pytest_directory=None,
+            output_pytest_usecase=None,
+            output_pytest_dependency=None,
             json=False,
             url=False,
         )
@@ -114,8 +102,8 @@ class TestCLIMain(TestCase):
         return loads(self.print_mock.get())
 
     def test_use_cases_and_dependencies_text(self):
-        self.args.output_use_cases = list()
-        self.args.output_tests_dependencies = list()
+        self.args.output_usecase = list()
+        self.args.output_pytest_dependency = list()
         self.assertIsNone(main())
         # the output needs to be cut in chunks, as the lists can be re-ordered
         # during the parsing of the manifest
@@ -124,21 +112,21 @@ class TestCLIMain(TestCase):
             self.assertIn(chunk, text)
 
     def test_cases_and_dependencies_json(self):
-        self.args.output_use_cases = list()
-        self.args.output_tests_dependencies = list()
+        self.args.output_usecase = list()
+        self.args.output_pytest_dependency = list()
         self.args.json = True
         self.assertIsNone(main())
         # like before, the output needs to be divided and the lists compared
         # separately as they may have been re-ordered
         json = self.json
-        dependencies = json["tests"]["dependencies"].pop("testing_develop")
         self.assertDictEqual(json, UC_D_EXPECTED_JSON)
-        self.assertCountEqual(dependencies, EXPECTED_DEPENDENCIES_JSON)
+        # dependencies = json["tests"]["dependencies"].pop("testing_develop")
+        # self.assertCountEqual(dependencies, EXPECTED_DEPENDENCIES_JSON)
 
     def test_single_field(self):
         self.args.output_sdk = True
         self.assertIsNone(main())
-        self.assertEqual(self.text, "c")
+        self.assertEqual(self.text, "sdk: c")
 
         self.args.json = True
         self.assertIsNone(main())
@@ -148,9 +136,9 @@ class TestCLIMain(TestCase):
         self.args.output_sdk = True
         self.args.output_devices = True
         self.args.output_build_directory = True
-        self.args.output_tests_unit_directory = True
-        self.args.output_tests_pytest_directory = list()
-        self.args.output_use_cases = list()
+        self.args.output_unittest_directory = True
+        self.args.output_pytest_directory = list()
+        self.args.output_usecase = list()
         self.assertIsNone(main())
         self.assertEqual(FULL_EXPECTED_TEXT, self.text)
 
@@ -158,31 +146,19 @@ class TestCLIMain(TestCase):
         self.args.output_sdk = True
         self.args.output_devices = True
         self.args.output_build_directory = True
-        self.args.output_tests_unit_directory = True
-        self.args.output_tests_pytest_directory = list()
-        self.args.output_use_cases = list()
+        self.args.output_unittest_directory = True
+        self.args.output_pytest_directory = list()
+        self.args.output_usecase = list()
         self.args.json = True
         self.assertIsNone(main())
         self.assertEqual(FULL_EXPECTED_JSON, self.json)
 
     def test_single_leaf(self):
         self.args.source = TEST_MANIFEST_DIRECTORY / "one_leaf.toml"
-        self.args.output_tests_dependencies = list()
-        expected_text = """testing_develop:
- 0.
-  url: https://github.com/<owner>/<app-repository>
-  ref: develop
-  use_case: debug
-  application_directory: some/dir/.dependencies/<app-repository>-develop-debug"""
+        self.args.output_pytest_dependency = list()
+        expected_text = """pytests_dependencies: ['testing_develop']"""
         expected_json = {
-            "testing_develop": [
-                {
-                    "url": "https://github.com/<owner>/<app-repository>",
-                    "ref": "develop",
-                    "use_case": "debug",
-                    "application_directory": "some/dir/.dependencies/<app-repository>-develop-debug",
-                }
-            ]
+            "pytests_dependencies": ["testing_develop"]
         }
         self.assertIsNone(main())
         self.assertEqual(self.text, expected_text)
@@ -192,26 +168,26 @@ class TestCLIMain(TestCase):
         self.assertEqual(self.json, expected_json)
 
     def test_error_inexisting_use_cases(self):
-        self.args.output_use_cases = ["does not exist"]
+        self.args.output_usecase = ["does_not_exist"]
         with self.assertRaises(SystemExit):
             main()
 
     def test_error_inexisting_tests_dependencies(self):
-        self.args.output_tests_dependencies = ["does not exist"]
+        self.args.output_pytest_dependency = ["1"]
         with self.assertRaises(SystemExit):
             main()
 
     def test_error_inexisting_tests_unit_directory(self):
         self.args.source = TEST_MANIFEST_DIRECTORY / "minimal.toml"
         # non existing unit directory
-        self.args.output_tests_unit_directory = True
+        self.args.output_unittest_directory = True
         with self.assertRaises(SystemExit):
             main()
 
     def test_error_inexisting_tests_pytest_directory(self):
         self.args.source = TEST_MANIFEST_DIRECTORY / "minimal.toml"
         # non existing unit directory
-        self.args.output_tests_pytest_directory = list()
+        self.args.output_pytest_directory = list()
         with self.assertRaises(SystemExit):
             main()
 

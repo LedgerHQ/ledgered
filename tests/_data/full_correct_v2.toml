@@ -12,10 +12,10 @@ test_with_feature_activated = "TEST_FLAG_TO_SET=1"
 directory = "./unit-tests/"
 
 [pytest.standalone]
-directory = "tests/"
+directory = "tests/standalone"
 
 [pytest.swap]
-directory = "tests_swap/"
+directory = "tests/swap"
 self_use_case = "test_with_feature_activated"
 [pytest.swap.dependencies]
 testing_with_latest = [
