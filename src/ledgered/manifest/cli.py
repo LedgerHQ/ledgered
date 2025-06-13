@@ -258,6 +258,12 @@ def main() -> None:  # pragma: no cover
             test_config = repo_manifest.pytests[0]
             if isinstance(test_config, TestsConfig):
                 display_content["tests"]["pytest_directory"] = str(test_config.pytest_directory)
+            else:
+                logger.error(
+                    "This manifest contains a [pytests] field, but no [tests] field. "
+                    "Please use the --output-pytest-directory option instead"
+                )
+                sys.exit(2)
 
     if args.output_pytest_directories is not None:
         if len(repo_manifest.pytests) == 0:
@@ -269,7 +275,7 @@ def main() -> None:  # pragma: no cover
             display_content["pytest_directories"] = list()
             for idx, test_config in enumerate(repo_manifest.pytests):
                 if isinstance(test_config, PyTestsConfig):
-                    if len(args.output_pytest_directory) == 1:
+                    if len(args.output_pytest_directories) == 1:
                         if idx != int(args.output_pytest_directory[0]):
                             continue
                     display_content["pytest_directories"].append(str(test_config.directory))
