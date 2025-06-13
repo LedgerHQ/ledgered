@@ -1,0 +1,28 @@
+[app]
+build_directory = "./"
+sdk = "C"
+devices = ["nanox", "nanos+", "stax", "flex"]
+
+[use_cases]
+debug = "DEBUG=1"
+test = "DEBUG=1"
+test_with_feature_activated = "TEST_FLAG_TO_SET=1"
+
+[unit_tests]
+directory = "./unit-tests/"
+
+[pytest.standalone]
+directory = "tests/standalone"
+
+[pytest.swap]
+directory = "tests/swap"
+self_use_case = "test_with_feature_activated"
+[pytest.swap.dependencies]
+testing_with_latest = [
+    {url = "https://github.com/LedgerHQ/app-exchange", ref = "develop", use_case="dbg_use_test_keys"},
+    {url = "https://github.com/LedgerHQ/app-ethereum", ref = "develop", use_case="use_test_keys"},
+]
+testing_with_prod = [
+  {url = "https://github.com/LedgerHQ/app-exchange", ref = "master"},
+  {url = "https://github.com/LedgerHQ/app-ethereum", ref = "master"}
+]

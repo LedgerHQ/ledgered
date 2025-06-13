@@ -92,6 +92,9 @@ class TestCLIMain(TestCase):
             output_tests_unit_directory=False,
             output_tests_pytest_directory=False,
             output_tests_dependencies=None,
+            output_pytest_directories=None,
+            output_pytest_usecases=None,
+            output_pytest_dependencies=None,
             json=False,
             url=False,
         )
