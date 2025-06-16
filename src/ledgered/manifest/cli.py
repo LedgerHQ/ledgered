@@ -292,8 +292,8 @@ def main() -> None:  # pragma: no cover
                 if isinstance(test_config, TestsConfig):
                     continue
                 elif isinstance(test_config, PyTestsConfig):
-                    if len(args.output_pytest_usecase) == 1:
-                        if idx != int(args.output_pytest_usecase[0]):
+                    if len(args.output_pytest_usecases) == 1:
+                        if idx != int(args.output_pytest_usecases[0]):
                             continue
                     display_content["pytest_usecases"].append(str(test_config.self_use_case))
 
@@ -304,16 +304,18 @@ def main() -> None:  # pragma: no cover
                 pytest_dependencies = list()
                 if test_config.dependencies is not None:
                     pytest_dependencies = list(test_config.dependencies)
-                    if len(args.output_pytest_dependency) >= 1:
-                        if idx != int(args.output_pytest_dependency[0]):
+                    if len(args.output_pytest_dependencies) >= 1:
+                        if idx != int(args.output_pytest_dependencies[0]):
                             continue
-                    if len(args.output_pytest_dependency) == 2:
+                    if len(args.output_pytest_dependencies) == 2:
                         for k, v in test_config.dependencies.json.items():
-                            if k != args.output_pytest_dependency[1]:
+                            if k != args.output_pytest_dependencies[1]:
                                 continue
                             display_content["pytests_dependencies"].append(v)
                     else:
                         display_content["pytests_dependencies"].append(pytest_dependencies)
+                else:
+                    display_content["pytests_dependencies"].append(pytest_dependencies)
             # if there is only one list of dependencies, we remove the list
             if len(display_content["pytests_dependencies"]) == 1:
                 display_content["pytests_dependencies"] = display_content["pytests_dependencies"][0]
