@@ -276,7 +276,7 @@ def main() -> None:  # pragma: no cover
             for idx, test_config in enumerate(repo_manifest.pytests):
                 if isinstance(test_config, PyTestsConfig):
                     if len(args.output_pytest_directories) == 1:
-                        if idx != int(args.output_pytest_directory[0]):
+                        if idx != int(args.output_pytest_directories[0]):
                             continue
                     display_content["pytest_directories"].append(str(test_config.directory))
 
