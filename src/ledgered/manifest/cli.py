@@ -4,11 +4,12 @@ import sys
 from argparse import ArgumentParser
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict
+from typing import Dict, cast
 
 from .constants import MANIFEST_FILE_NAME
 from ..github import GitHubLedgerHQ
 from .manifest import Manifest
+from .tests import TestsConfig, PyTestsConfig
 from .utils import getLogger
 
 
@@ -132,10 +133,37 @@ def set_parser() -> ArgumentParser:
         default=None,
         action="store",
         nargs="*",
-        help="outputs the given use cases. Fails if none",
+        help="outputs the use cases. Fails if none",
     )
     parser.add_argument(
         "-j", "--json", required=False, action="store_true", help="outputs as JSON rather than text"
+    )
+    ##############################################################
+    # New commands for Manifest v2
+    ##############################################################
+    parser.add_argument(
+        "--output-pytest-directories",
+        required=False,
+        action="store",
+        default=None,
+        nargs="*",
+        help="outputs the directories of the pytest (functional) tests. Fails if none",
+    )
+    parser.add_argument(
+        "--output-pytest-usecases",
+        required=False,
+        action="store",
+        default=None,
+        nargs="*",
+        help="outputs the usecases of the pytest (functional) tests. Fails if none",
+    )
+    parser.add_argument(
+        "--output-pytest-dependencies",
+        required=False,
+        action="store",
+        default=None,
+        nargs="*",
+        help="outputs the dependencies of the pytest (functional) tests. Fails if none",
     )
     return parser
 
@@ -191,8 +219,8 @@ def main() -> None:  # pragma: no cover
 
     if args.output_tests_dependencies is not None:
         dependencies = dict()
-        if repo_manifest.tests is not None and repo_manifest.tests.dependencies is not None:
-            dependencies = repo_manifest.tests.dependencies.json
+        if len(repo_manifest.pytests) != 0 and repo_manifest.pytests[0].dependencies is not None:
+            dependencies = repo_manifest.pytests[0].dependencies.json
         non_empty = len(dependencies) > 0
         if len(args.output_tests_dependencies) != 0:
             dependencies = {
@@ -204,15 +232,96 @@ def main() -> None:  # pragma: no cover
         display_content["tests"]["dependencies"] = dependencies
 
     if args.output_tests_unit_directory:
-        if repo_manifest.tests is None or repo_manifest.tests.unit_directory is None:
-            logger.error("This manifest does not contains the 'tests.unit_directory' field")
+        if repo_manifest.unit_tests is None and (
+            len(repo_manifest.pytests) == 0
+            or cast(TestsConfig, repo_manifest.pytests[0]).unit_directory is None
+        ):
+            logger.error("This manifest does not contains the 'unit_tests.directory' field")
             sys.exit(2)
-        display_content["tests"]["unit_directory"] = str(repo_manifest.tests.unit_directory)
+        else:
+            if repo_manifest.unit_tests is not None:
+                display_content["tests"]["unit_directory"] = str(
+                    repo_manifest.unit_tests.unit_directory
+                )
+            else:
+                display_content["tests"]["unit_directory"] = str(
+                    cast(TestsConfig, repo_manifest.pytests[0]).unit_directory
+                )
+
     if args.output_tests_pytest_directory:
-        if repo_manifest.tests is None or repo_manifest.tests.pytest_directory is None:
-            logger.error("This manifest does not contains the 'tests.pytest_directory' field")
+        if len(repo_manifest.pytests) == 0:
+            logger.error(
+                "This manifest does not contains any [tests] (manifest version = 1) or [pytests] (manifest version > 1) field"
+            )
             sys.exit(2)
-        display_content["tests"]["pytest_directory"] = str(repo_manifest.tests.pytest_directory)
+        else:
+            test_config = repo_manifest.pytests[0]
+            if isinstance(test_config, TestsConfig):
+                display_content["tests"]["pytest_directory"] = str(test_config.pytest_directory)
+            else:
+                logger.error(
+                    "This manifest contains a [pytests] field, but no [tests] field. "
+                    "Please use the --output-pytest-directory option instead"
+                )
+                sys.exit(2)
+
+    if args.output_pytest_directories is not None:
+        if len(repo_manifest.pytests) == 0:
+            logger.error(
+                "This manifest does not contains any [tests] (manifest version = 1) or [pytests] (manifest version > 1) field"
+            )
+            sys.exit(2)
+        else:
+            display_content["pytest_directories"] = list()
+            for idx, test_config in enumerate(repo_manifest.pytests):
+                if isinstance(test_config, PyTestsConfig):
+                    if len(args.output_pytest_directories) == 1:
+                        if idx != int(args.output_pytest_directories[0]):
+                            continue
+                    display_content["pytest_directories"].append(str(test_config.directory))
+
+    if args.output_pytest_usecases is not None:
+        if len(repo_manifest.pytests) == 0:
+            logger.error(
+                "This manifest does not contains any [tests] (manifest version = 1) or [pytests] (manifest version > 1) field"
+            )
+            sys.exit(2)
+        else:
+            display_content["pytest_usecases"] = list()
+            for idx, test_config in enumerate(repo_manifest.pytests):
+                if isinstance(test_config, TestsConfig):
+                    continue
+                elif isinstance(test_config, PyTestsConfig):
+                    if len(args.output_pytest_usecases) == 1:
+                        if idx != int(args.output_pytest_usecases[0]):
+                            continue
+                    display_content["pytest_usecases"].append(str(test_config.self_use_case))
+
+    if args.output_pytest_dependencies is not None:
+        if len(repo_manifest.pytests) != 0:
+            display_content["pytests_dependencies"] = list()
+            for idx, test_config in enumerate(repo_manifest.pytests):
+                pytest_dependencies = list()
+                if test_config.dependencies is not None:
+                    pytest_dependencies = list(test_config.dependencies)
+                    if len(args.output_pytest_dependencies) >= 1:
+                        if idx != int(args.output_pytest_dependencies[0]):
+                            continue
+                    if len(args.output_pytest_dependencies) == 2:
+                        for k, v in test_config.dependencies.json.items():
+                            if k != args.output_pytest_dependencies[1]:
+                                continue
+                            display_content["pytests_dependencies"].append(v)
+                    else:
+                        display_content["pytests_dependencies"].append(pytest_dependencies)
+                else:
+                    display_content["pytests_dependencies"].append(pytest_dependencies)
+            # if there is only one list of dependencies, we remove the list
+            if len(display_content["pytests_dependencies"]) == 1:
+                display_content["pytests_dependencies"] = display_content["pytests_dependencies"][0]
+            if len(display_content["pytests_dependencies"]) == 0:
+                logger.error("No pytest dependencies found")
+                sys.exit(2)
 
     # cropping down to the latest dict, if previouses only has 1 key so that the output (either text
     # or JSON) is the smallest possible
