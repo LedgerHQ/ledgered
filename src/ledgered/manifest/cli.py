@@ -254,16 +254,23 @@ def main() -> None:  # pragma: no cover
                 "This manifest does not contains any [tests] (manifest version = 1) or [pytests] (manifest version > 1) field"
             )
             sys.exit(2)
+        test_config = repo_manifest.pytests[0]
+        if isinstance(test_config, TestsConfig):
+            display_content["tests"]["pytest_directory"] = str(test_config.pytest_directory)
+        elif isinstance(test_config, PyTestsConfig):
+            for cfg in repo_manifest.pytests:
+                assert isinstance(cfg, PyTestsConfig)
+                if "standalone" in str(cfg.directory):
+                    break
+            assert isinstance(cfg, PyTestsConfig)
+            if "standalone" in str(cfg.directory):
+                display_content["tests"]["pytest_directory"] = str(cfg.directory)
         else:
-            test_config = repo_manifest.pytests[0]
-            if isinstance(test_config, TestsConfig):
-                display_content["tests"]["pytest_directory"] = str(test_config.pytest_directory)
-            else:
-                logger.error(
-                    "This manifest contains a [pytests] field, but no [tests] field. "
-                    "Please use the --output-pytest-directory option instead"
-                )
-                sys.exit(2)
+            logger.error(
+                "This manifest contains a [pytests] field, but no [tests] field. "
+                "Please use the --output-pytest-directories option instead"
+            )
+            sys.exit(2)
 
     if args.output_pytest_directories is not None:
         if len(repo_manifest.pytests) == 0:
@@ -271,14 +278,13 @@ def main() -> None:  # pragma: no cover
                 "This manifest does not contains any [tests] (manifest version = 1) or [pytests] (manifest version > 1) field"
             )
             sys.exit(2)
-        else:
-            display_content["pytest_directories"] = list()
-            for idx, test_config in enumerate(repo_manifest.pytests):
-                if isinstance(test_config, PyTestsConfig):
-                    if len(args.output_pytest_directories) == 1:
-                        if idx != int(args.output_pytest_directories[0]):
-                            continue
-                    display_content["pytest_directories"].append(str(test_config.directory))
+        display_content["pytest_directories"] = list()
+        for idx, test_config in enumerate(repo_manifest.pytests):
+            if isinstance(test_config, PyTestsConfig):
+                if len(args.output_pytest_directories) == 1:
+                    if idx != int(args.output_pytest_directories[0]):
+                        continue
+                display_content["pytest_directories"].append(str(test_config.directory))
 
     if args.output_pytest_usecases is not None:
         if len(repo_manifest.pytests) == 0:
@@ -286,16 +292,15 @@ def main() -> None:  # pragma: no cover
                 "This manifest does not contains any [tests] (manifest version = 1) or [pytests] (manifest version > 1) field"
             )
             sys.exit(2)
-        else:
-            display_content["pytest_usecases"] = list()
-            for idx, test_config in enumerate(repo_manifest.pytests):
-                if isinstance(test_config, TestsConfig):
-                    continue
-                elif isinstance(test_config, PyTestsConfig):
-                    if len(args.output_pytest_usecases) == 1:
-                        if idx != int(args.output_pytest_usecases[0]):
-                            continue
-                    display_content["pytest_usecases"].append(str(test_config.self_use_case))
+        display_content["pytest_usecases"] = list()
+        for idx, test_config in enumerate(repo_manifest.pytests):
+            if isinstance(test_config, TestsConfig):
+                continue
+            elif isinstance(test_config, PyTestsConfig):
+                if len(args.output_pytest_usecases) == 1:
+                    if idx != int(args.output_pytest_usecases[0]):
+                        continue
+                display_content["pytest_usecases"].append(str(test_config.self_use_case))
 
     if args.output_pytest_dependencies is not None:
         if len(repo_manifest.pytests) != 0:
