@@ -285,6 +285,9 @@ def main() -> None:  # pragma: no cover
                     if idx != int(args.output_pytest_directories[0]):
                         continue
                 display_content["pytest_directories"].append(str(test_config.directory))
+            if isinstance(test_config, TestsConfig):
+                # Also add legacy format to the output list
+                display_content["pytest_directories"].append(str(test_config.pytest_directory))
 
     if args.output_pytest_usecases is not None:
         if len(repo_manifest.pytests) == 0:
