@@ -20,7 +20,7 @@ def test_get_app(gh):
 
 def test_exchange_manifest(exchange):
     assert exchange.manifest.app.sdk == "c"
-    assert len(exchange.manifest.app.devices) == 4
+    assert len(exchange.manifest.app.devices) == 5
 
 
 def test_exchange_makefile_path(exchange):

@@ -256,15 +256,15 @@ def main() -> None:  # pragma: no cover
             sys.exit(2)
         test_config = repo_manifest.pytests[0]
         if isinstance(test_config, TestsConfig):
+            # Legacy format, only one possible directory to return so we return it
             display_content["tests"]["pytest_directory"] = str(test_config.pytest_directory)
         elif isinstance(test_config, PyTestsConfig):
+            # If we have several pytests, we look for the [standalone] one
             for cfg in repo_manifest.pytests:
                 assert isinstance(cfg, PyTestsConfig)
-                if "standalone" in str(cfg.directory):
+                if cfg.key == "standalone":
+                    display_content["tests"]["pytest_directory"] = str(cfg.directory)
                     break
-            assert isinstance(cfg, PyTestsConfig)
-            if "standalone" in str(cfg.directory):
-                display_content["tests"]["pytest_directory"] = str(cfg.directory)
         else:
             logger.error(
                 "This manifest contains a [pytests] field, but no [tests] field. "
