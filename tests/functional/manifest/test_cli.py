@@ -296,6 +296,45 @@ class TestCLIMain(TestCase):
         with self.assertRaises(SystemExit):
             main()
 
+    def test_output_pytest_directories_v2_with_tests_unit_only_json(self):
+        # Test manifest with both [pytest.*] sections AND [tests] with only unit_directory
+        # The [tests] section should be skipped since it has no pytest_directory
+        from pathlib import Path
+        import tempfile
+
+        manifest_content = """[app]
+build_directory = "./"
+sdk = "C"
+devices = ["nanox", "nanos+"]
+
+[pytest.standalone]
+directory = "./tests/standalone/"
+
+[pytest.swap]
+directory = "./tests/swap/"
+
+[tests]
+unit_directory = "./unit-tests/"
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
+            f.write(manifest_content)
+            temp_path = Path(f.name)
+
+        try:
+            self.args.source = temp_path
+            self.args.output_pytest_directories = []
+            self.args.json = True
+            expected_json = {
+                "pytest_directories": [
+                    {"name": "standalone", "directory": "tests/standalone"},
+                    {"name": "swap", "directory": "tests/swap"},
+                ]
+            }
+            self.assertIsNone(main())
+            self.assertEqual(self.json, expected_json)
+        finally:
+            temp_path.unlink()
+
 
 class TestCLIset_parser(TestCase):
     diffMax = None

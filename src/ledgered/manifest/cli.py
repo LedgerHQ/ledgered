@@ -288,10 +288,11 @@ def main() -> None:  # pragma: no cover
                     {"name": test_config.key, "directory": str(test_config.directory)}
                 )
             if isinstance(test_config, TestsConfig):
-                # Also add legacy format to the output list
-                display_content["pytest_directories"].append(
-                    {"name": "tests", "directory": str(test_config.pytest_directory)}
-                )
+                # Also add legacy format to the output list, but only if pytest_directory is defined
+                if test_config.pytest_directory is not None:
+                    display_content["pytest_directories"].append(
+                        {"name": "tests", "directory": str(test_config.pytest_directory)}
+                    )
 
     if args.output_pytest_usecases is not None:
         if len(repo_manifest.pytests) == 0:
