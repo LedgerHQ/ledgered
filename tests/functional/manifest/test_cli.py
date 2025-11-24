@@ -223,6 +223,79 @@ class TestCLIMain(TestCase):
         self.args.url = True
         self.assertIsNone(main())
 
+    def test_output_pytest_directories_v1_text(self):
+        # Test with v1 manifest (legacy format)
+        self.args.output_pytest_directories = []
+        expected_text = """pytest_directories:
+ 0.
+  name: tests
+  directory: tests/functional"""
+        self.assertIsNone(main())
+        self.assertEqual(self.text, expected_text)
+
+    def test_output_pytest_directories_v1_json(self):
+        # Test with v1 manifest (legacy format)
+        self.args.output_pytest_directories = []
+        self.args.json = True
+        expected_json = {"pytest_directories": [{"name": "tests", "directory": "tests/functional"}]}
+        self.assertIsNone(main())
+        self.assertEqual(self.json, expected_json)
+
+    def test_output_pytest_directories_v2_text(self):
+        # Test with v2 manifest
+        self.args.source = TEST_MANIFEST_DIRECTORY / "full_correct_v2.toml"
+        self.args.output_pytest_directories = []
+        expected_text = """pytest_directories:
+ 0.
+  name: standalone
+  directory: tests/path_to_st_tests
+ 1.
+  name: swap
+  directory: tests/swap"""
+        self.assertIsNone(main())
+        self.assertEqual(self.text, expected_text)
+
+    def test_output_pytest_directories_v2_json(self):
+        # Test with v2 manifest
+        self.args.source = TEST_MANIFEST_DIRECTORY / "full_correct_v2.toml"
+        self.args.output_pytest_directories = []
+        self.args.json = True
+        expected_json = {
+            "pytest_directories": [
+                {"name": "standalone", "directory": "tests/path_to_st_tests"},
+                {"name": "swap", "directory": "tests/swap"},
+            ]
+        }
+        self.assertIsNone(main())
+        self.assertEqual(self.json, expected_json)
+
+    def test_output_pytest_directories_v2_single_index_text(self):
+        # Test with v2 manifest, requesting only the first pytest section
+        self.args.source = TEST_MANIFEST_DIRECTORY / "full_correct_v2.toml"
+        self.args.output_pytest_directories = ["0"]
+        expected_text = """pytest_directories:
+ 0.
+  name: standalone
+  directory: tests/path_to_st_tests"""
+        self.assertIsNone(main())
+        self.assertEqual(self.text, expected_text)
+
+    def test_output_pytest_directories_v2_single_index_json(self):
+        # Test with v2 manifest, requesting only the second pytest section
+        self.args.source = TEST_MANIFEST_DIRECTORY / "full_correct_v2.toml"
+        self.args.output_pytest_directories = ["1"]
+        self.args.json = True
+        expected_json = {"pytest_directories": [{"name": "swap", "directory": "tests/swap"}]}
+        self.assertIsNone(main())
+        self.assertEqual(self.json, expected_json)
+
+    def test_output_pytest_directories_minimal_manifest_error(self):
+        # Test error when manifest has no pytest sections
+        self.args.source = TEST_MANIFEST_DIRECTORY / "minimal.toml"
+        self.args.output_pytest_directories = []
+        with self.assertRaises(SystemExit):
+            main()
+
 
 class TestCLIset_parser(TestCase):
     diffMax = None
