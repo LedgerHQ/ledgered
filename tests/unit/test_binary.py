@@ -23,6 +23,7 @@ class TestSections(TestCase):
             "target_id": "target_id",
             "target_name": "target_name",
             "target_version": "target_version",
+            "app_flags": "app_flags",
         }
 
     def test___init__empty(self):
@@ -40,6 +41,7 @@ class TestSections(TestCase):
         self.assertIsNone(sections.target_id)
         self.assertIsNone(sections.target_name)
         self.assertIsNone(sections.target_version)
+        self.assertIsNone(sections.app_flags)
 
     def test___str__(self):
         sections = B.Sections(**self.inputs)
