@@ -11,12 +11,11 @@ from ledgered.manifest import MANIFEST_FILE_NAME, Manifest
 LEDGER_ORG_NAME = "ledgerhq"
 APP_PLUGIN_PREFIX = "app-plugin-"
 
-# Rust applications declare their variants as Cargo features prefixed with this
-# string (e.g. `variant_testnet`). The feature name is what `cargo build
-# --features <name>` expects, so it is kept as-is as the variant value.
-RUST_VARIANT_PREFIX = "variant_"
-# There is no `PARAM=value` notion for Rust variants as there is for C apps
-# (`make COIN=...`); they are selected through Cargo's `--features` flag.
+# Rust applications declare their variants as Cargo features: every feature is a
+# variant, the `default` one being the standard build. The feature name is what
+# `cargo build --features <name>` expects, so it is kept as-is as the variant
+# value. There is no `PARAM=value` notion as for C apps (`make COIN=...`);
+# variants are selected through Cargo's `--features` flag.
 RUST_VARIANT_PARAM = "--features"
 
 
@@ -127,20 +126,21 @@ class AppRepository(PyRepository.Repository):
     def _set_rust_variants(self) -> None:
         """Extracts the variants from the app Cargo.toml.
 
-        Rust variants are declared as Cargo features prefixed with
-        `variant_`, ex:
+        Every Cargo feature is a variant, the `default` feature being the
+        standard build, ex:
         ```
         [features]
-        variant_testnet = ["ledger_device_sdk/variant_0"]
-        variant_betanet = ["ledger_device_sdk/variant_1"]
+        default = ["ledger_device_sdk/nano_nbgl"]
+        debug = ["ledger_device_sdk/debug"]
+        testnet = ["ledger_device_sdk/variant_0"]
+        betanet = ["ledger_device_sdk/variant_1"]
         ```
         """
         try:
             cargo = tomli.loads(self.makefile)
         except tomli.TOMLDecodeError:
             return
-        features = cargo.get("features", {})
-        variants = [feature for feature in features if feature.startswith(RUST_VARIANT_PREFIX)]
+        variants = list(cargo.get("features", {}))
         if variants:
             self._variant_param = RUST_VARIANT_PARAM
             self._variant_values = variants
