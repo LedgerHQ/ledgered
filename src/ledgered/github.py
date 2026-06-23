@@ -1,3 +1,4 @@
+import tomli
 from enum import IntEnum, auto
 from github import ContentFile as PyContentFile, Github as PyGithub, Repository as PyRepository
 from github.GithubException import UnknownObjectException, GithubException
@@ -9,6 +10,14 @@ from ledgered.manifest import MANIFEST_FILE_NAME, Manifest
 
 LEDGER_ORG_NAME = "ledgerhq"
 APP_PLUGIN_PREFIX = "app-plugin-"
+
+# Rust applications declare their variants as Cargo features prefixed with this
+# string (e.g. `variant_testnet`). The feature name is what `cargo build
+# --features <name>` expects, so it is kept as-is as the variant value.
+RUST_VARIANT_PREFIX = "variant_"
+# There is no `PARAM=value` notion for Rust variants as there is for C apps
+# (`make COIN=...`); they are selected through Cargo's `--features` flag.
+RUST_VARIANT_PARAM = "--features"
 
 
 class Condition(IntEnum):
@@ -101,6 +110,42 @@ class AppRepository(PyRepository.Repository):
         self._variant_values.clear()
 
     def _set_variants(self) -> None:
+        """Extracts the variants from the app build file.
+
+        C apps declare them in their Makefile, Rust apps in their Cargo.toml
+        (`self.makefile` returns the relevant file content for each).
+        """
+        if self.manifest.app.is_rust:
+            self._set_rust_variants()
+        else:
+            self._set_makefile_variants()
+
+        if not self._variant_values:
+            # Invalid configuration, reset the name
+            self._variant_param = None
+
+    def _set_rust_variants(self) -> None:
+        """Extracts the variants from the app Cargo.toml.
+
+        Rust variants are declared as Cargo features prefixed with
+        `variant_`, ex:
+        ```
+        [features]
+        variant_testnet = ["ledger_device_sdk/variant_0"]
+        variant_betanet = ["ledger_device_sdk/variant_1"]
+        ```
+        """
+        try:
+            cargo = tomli.loads(self.makefile)
+        except tomli.TOMLDecodeError:
+            return
+        features = cargo.get("features", {})
+        variants = [feature for feature in features if feature.startswith(RUST_VARIANT_PREFIX)]
+        if variants:
+            self._variant_param = RUST_VARIANT_PARAM
+            self._variant_values = variants
+
+    def _set_makefile_variants(self) -> None:
         """Extracts the variants from the app Makefile"""
 
         for line in self.makefile.splitlines():
@@ -129,10 +174,6 @@ class AppRepository(PyRepository.Repository):
         else:
             # No variant found
             self._variant_values = []
-
-        if not self._variant_values:
-            # Invalid configuration, reset the name
-            self._variant_param = None
 
 
 class GitHubApps(list):
