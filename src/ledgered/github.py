@@ -11,12 +11,16 @@ from ledgered.manifest import MANIFEST_FILE_NAME, Manifest
 LEDGER_ORG_NAME = "ledgerhq"
 APP_PLUGIN_PREFIX = "app-plugin-"
 
-# Rust applications declare their variants as Cargo features: every feature is a
-# variant, the `default` one being the standard build. The feature name is what
+# Rust applications declare their variants as Cargo features. Only two kinds of
+# features are considered app variants: the `default` one (the standard build)
+# and every feature whose name is prefixed with `variant_`. All other features
+# are regular Cargo features and are not app variants. The feature name is what
 # `cargo build --features <name>` expects, so it is kept as-is as the variant
 # value. There is no `PARAM=value` notion as for C apps (`make COIN=...`);
 # variants are selected through Cargo's `--features` flag.
 RUST_VARIANT_PARAM = "--features"
+RUST_VARIANT_DEFAULT = "default"
+RUST_VARIANT_PREFIX = "variant_"
 
 
 class Condition(IntEnum):
@@ -126,21 +130,26 @@ class AppRepository(PyRepository.Repository):
     def _set_rust_variants(self) -> None:
         """Extracts the variants from the app Cargo.toml.
 
-        Every Cargo feature is a variant, the `default` feature being the
-        standard build, ex:
+        Only the `default` feature (the standard build) and the features whose
+        name is prefixed with `variant_` are considered app variants. Any other
+        feature is a regular Cargo feature and is not a variant, ex:
         ```
         [features]
-        default = ["ledger_device_sdk/nano_nbgl"]
-        debug = ["ledger_device_sdk/debug"]
-        testnet = ["ledger_device_sdk/variant_0"]
-        betanet = ["ledger_device_sdk/variant_1"]
+        default = ["ledger_device_sdk/nano_nbgl"]  # variant (standard build)
+        debug = ["ledger_device_sdk/debug"]        # not a variant
+        variant_testnet = ["ledger_device_sdk/variant_0"]  # variant
+        variant_betanet = ["ledger_device_sdk/variant_1"]  # variant
         ```
         """
         try:
             cargo = tomli.loads(self.makefile)
         except tomli.TOMLDecodeError:
             return
-        variants = list(cargo.get("features", {}))
+        variants = [
+            feature
+            for feature in cargo.get("features", {})
+            if feature == RUST_VARIANT_DEFAULT or feature.startswith(RUST_VARIANT_PREFIX)
+        ]
         if variants:
             self._variant_param = RUST_VARIANT_PARAM
             self._variant_values = variants

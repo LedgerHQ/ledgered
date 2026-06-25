@@ -73,7 +73,8 @@ class TestAppRepository(TestCase):
         self.assertListEqual(app_repo._variant_values, [])
 
     def test__set_variants_rust(self):
-        # Every Cargo feature is a variant, the `default` one being the standard build.
+        # Only the `default` feature and the `variant_`-prefixed features are
+        # considered app variants; other features are ignored.
         AppRepository.makefile = (
             "[package]\n"
             'name = "app-boilerplate-rust"\n'
@@ -81,8 +82,8 @@ class TestAppRepository(TestCase):
             "[features]\n"
             'default = ["ledger_device_sdk/nano_nbgl"]\n'
             'debug = ["ledger_device_sdk/debug"]\n'
-            'testnet = ["ledger_device_sdk/variant_0"]\n'
-            'betanet = ["ledger_device_sdk/variant_1"]\n'
+            'variant_testnet = ["ledger_device_sdk/variant_0"]\n'
+            'variant_betanet = ["ledger_device_sdk/variant_1"]\n'
         )
         app_repo = self._get_repo(is_rust=True)
         self.assertIsNone(app_repo._variant_param)
@@ -91,10 +92,30 @@ class TestAppRepository(TestCase):
         self.assertIsNone(app_repo._set_variants())
 
         self.assertEqual(app_repo._variant_param, "--features")
-        self.assertListEqual(app_repo._variant_values, ["default", "debug", "testnet", "betanet"])
+        self.assertListEqual(
+            app_repo._variant_values, ["default", "variant_testnet", "variant_betanet"]
+        )
 
     def test__set_variants_rust_no_feature(self):
         AppRepository.makefile = '[package]\nname = "app-boilerplate-rust"\n'
+        app_repo = self._get_repo(is_rust=True)
+
+        self.assertIsNone(app_repo._set_variants())
+
+        self.assertIsNone(app_repo._variant_param)
+        self.assertListEqual(app_repo._variant_values, [])
+
+    def test__set_variants_rust_no_variant_feature(self):
+        # Features that are neither `default` nor `variant_`-prefixed are not
+        # variants, so nothing should be detected.
+        AppRepository.makefile = (
+            "[package]\n"
+            'name = "app-boilerplate-rust"\n'
+            "\n"
+            "[features]\n"
+            'debug = ["ledger_device_sdk/debug"]\n'
+            'pending_review_screen = ["ledger_device_sdk/pending_review_screen"]\n'
+        )
         app_repo = self._get_repo(is_rust=True)
 
         self.assertIsNone(app_repo._set_variants())
