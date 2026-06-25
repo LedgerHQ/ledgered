@@ -1,3 +1,4 @@
+import tomli
 from enum import IntEnum, auto
 from github import ContentFile as PyContentFile, Github as PyGithub, Repository as PyRepository
 from github.GithubException import UnknownObjectException, GithubException
@@ -9,6 +10,17 @@ from ledgered.manifest import MANIFEST_FILE_NAME, Manifest
 
 LEDGER_ORG_NAME = "ledgerhq"
 APP_PLUGIN_PREFIX = "app-plugin-"
+
+# Rust applications declare their variants as Cargo features. Only two kinds of
+# features are considered app variants: the `default` one (the standard build)
+# and every feature whose name is prefixed with `variant_`. All other features
+# are regular Cargo features and are not app variants. The feature name is what
+# `cargo build --features <name>` expects, so it is kept as-is as the variant
+# value. There is no `PARAM=value` notion as for C apps (`make COIN=...`);
+# variants are selected through Cargo's `--features` flag.
+RUST_VARIANT_PARAM = "--features"
+RUST_VARIANT_DEFAULT = "default"
+RUST_VARIANT_PREFIX = "variant_"
 
 
 class Condition(IntEnum):
@@ -101,6 +113,48 @@ class AppRepository(PyRepository.Repository):
         self._variant_values.clear()
 
     def _set_variants(self) -> None:
+        """Extracts the variants from the app build file.
+
+        C apps declare them in their Makefile, Rust apps in their Cargo.toml
+        (`self.makefile` returns the relevant file content for each).
+        """
+        if self.manifest.app.is_rust:
+            self._set_rust_variants()
+        else:
+            self._set_makefile_variants()
+
+        if not self._variant_values:
+            # Invalid configuration, reset the name
+            self._variant_param = None
+
+    def _set_rust_variants(self) -> None:
+        """Extracts the variants from the app Cargo.toml.
+
+        Only the `default` feature (the standard build) and the features whose
+        name is prefixed with `variant_` are considered app variants. Any other
+        feature is a regular Cargo feature and is not a variant, ex:
+        ```
+        [features]
+        default = ["ledger_device_sdk/nano_nbgl"]  # variant (standard build)
+        debug = ["ledger_device_sdk/debug"]        # not a variant
+        variant_testnet = ["ledger_device_sdk/variant_0"]  # variant
+        variant_betanet = ["ledger_device_sdk/variant_1"]  # variant
+        ```
+        """
+        try:
+            cargo = tomli.loads(self.makefile)
+        except tomli.TOMLDecodeError:
+            return
+        variants = [
+            feature
+            for feature in cargo.get("features", {})
+            if feature == RUST_VARIANT_DEFAULT or feature.startswith(RUST_VARIANT_PREFIX)
+        ]
+        if variants:
+            self._variant_param = RUST_VARIANT_PARAM
+            self._variant_values = variants
+
+    def _set_makefile_variants(self) -> None:
         """Extracts the variants from the app Makefile"""
 
         for line in self.makefile.splitlines():
@@ -129,10 +183,6 @@ class AppRepository(PyRepository.Repository):
         else:
             # No variant found
             self._variant_values = []
-
-        if not self._variant_values:
-            # Invalid configuration, reset the name
-            self._variant_param = None
 
 
 class GitHubApps(list):
