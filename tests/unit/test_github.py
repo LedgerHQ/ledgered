@@ -7,15 +7,23 @@ from ledgered.github import Condition, GitHubApps, GitHubLedgerHQ, NoManifestExc
 
 class AppRepositoryMock:
     def __init__(
-        self, name: str, sdk: Optional[str] = "c", archived: bool = False, private: bool = False
+        self,
+        name: str,
+        sdk: Optional[str] = "c",
+        archived: bool = False,
+        private: bool = False,
+        error: Optional[Exception] = None,
     ):
         self.name = name
         self.archived = archived
         self.private = private
         self._sdk = sdk
+        self._error = error
 
     @property
     def manifest(self) -> str:
+        if self._error is not None:
+            raise self._error
         if self._sdk:
             mock = MagicMock()
             mock.app.sdk = self._sdk
@@ -66,6 +74,47 @@ class TestGitHubApps(TestCase):
             self.apps.filter(exclude_list=["app-1", "app-3"]), [self.app4, self.app5, self.app6]
         )
         self.assertCountEqual(self.apps.filter(sdk=["rust"]), [self.app1])
+
+    def test_filter_sdk_preserves_order(self):
+        # The SDK filter reads manifests concurrently; the result must keep the
+        # input order and return every match (not just the first).
+        apps = GitHubApps(
+            [
+                AppRepositoryMock("app-a", sdk="rust"),
+                AppRepositoryMock("app-b", sdk="c"),
+                AppRepositoryMock("app-c", sdk="rust"),
+                AppRepositoryMock("app-d", sdk="rust"),
+            ]
+        )
+        self.assertListEqual(apps.filter(sdk=["rust"]), [apps[0], apps[2], apps[3]])
+
+    def test_filter_sdk_is_case_insensitive(self):
+        self.assertCountEqual(self.apps.filter(sdk=["RUST"]), [self.app1])
+
+    def test_filter_sdk_skips_apps_without_manifest(self):
+        apps = GitHubApps(
+            [
+                AppRepositoryMock("app-a", sdk="rust"),
+                AppRepositoryMock("app-no-manifest", sdk=None),  # raises NoManifestException
+                AppRepositoryMock("app-b", sdk="rust"),
+            ]
+        )
+        self.assertListEqual(apps.filter(sdk=["rust"]), [apps[0], apps[2]])
+
+    def test_filter_sdk_propagates_other_errors(self):
+        apps = GitHubApps(
+            [
+                AppRepositoryMock("app-a", sdk="rust"),
+                AppRepositoryMock("app-boom", error=RuntimeError("boom")),
+            ]
+        )
+        with self.assertRaises(RuntimeError):
+            apps.filter(sdk=["rust"])
+
+    def test_filter_sdk_empty_candidate_list(self):
+        # No candidate survives the (manifest-free) filters -> the concurrent
+        # section must be a no-op and not spin up a zero-worker pool.
+        self.assertListEqual(self.apps.filter(name="does-not-exist", sdk=["rust"]), [])
 
     def test_first(self):
         self.assertEqual(self.apps.first("3"), self.app3)
