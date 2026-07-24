@@ -1,4 +1,5 @@
 import tomli
+from concurrent.futures import ThreadPoolExecutor
 from enum import IntEnum, auto
 from github import ContentFile as PyContentFile, Github as PyGithub, Repository as PyRepository
 from github.GithubException import UnknownObjectException, GithubException
@@ -10,6 +11,11 @@ from ledgered.manifest import MANIFEST_FILE_NAME, Manifest
 
 LEDGER_ORG_NAME = "ledgerhq"
 APP_PLUGIN_PREFIX = "app-plugin-"
+
+# Filtering apps by SDK reads one manifest per app over the GitHub API. These
+# reads are I/O-bound and independent, so they are performed concurrently; this
+# caps the number of parallel manifest fetches.
+SDK_FILTER_MAX_WORKERS = 8
 
 # Rust applications declare their variants as Cargo features. Only two kinds of
 # features are considered app variants: the `default` one (the standard build)
@@ -232,16 +238,25 @@ class GitHubApps(list):
         elif plugin == Condition.ONLY:
             new_list = [r for r in new_list if r.name.lower().startswith(APP_PLUGIN_PREFIX)]
         if sdk is not None:
-            # Check list of sdk
+            # Each check reads the app manifest, i.e. one GitHub API round-trip,
+            # so classifying a large app list sequentially is slow. The reads are
+            # independent and I/O-bound: they are run concurrently while keeping
+            # the original ordering, and apps without a manifest are skipped (as
+            # in the sequential version). Any other manifest error still
+            # propagates.
             sdk_list = [s.lower() for s in sdk]
-            res_list = []
-            for r in new_list:
+
+            def _matches_sdk(repository: AppRepository) -> bool:
                 try:
-                    if r.manifest.app.sdk in sdk_list:
-                        res_list.append(r)
+                    return repository.manifest.app.sdk in sdk_list
                 except NoManifestException:
-                    pass
-            new_list = res_list
+                    return False
+
+            if new_list:
+                workers = min(SDK_FILTER_MAX_WORKERS, len(new_list))
+                with ThreadPoolExecutor(max_workers=workers) as pool:
+                    matches = list(pool.map(_matches_sdk, new_list))
+                new_list = [repo for repo, keep in zip(new_list, matches) if keep]
 
         return GitHubApps(new_list)
 
