@@ -1,9 +1,9 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Union
 
-from ledgered.serializers import Jsonable, JsonSet
 from ledgered.devices import Devices
+from ledgered.serializers import Jsonable, JsonSet
 
 
 @dataclass
@@ -12,7 +12,7 @@ class AppConfig(Jsonable):
     build_directory: Path
     devices: JsonSet
 
-    def __init__(self, sdk: str, build_directory: Union[str, Path], devices: Iterable[str]) -> None:
+    def __init__(self, sdk: str, build_directory: str | Path, devices: Iterable[str]) -> None:
         sdk = sdk.lower()
         if sdk not in ["rust", "c"]:
             raise ValueError(f"'{sdk}' unknown. Must be either 'C' or 'Rust'")

@@ -1,10 +1,12 @@
-import tomli
 from enum import IntEnum, auto
-from github import ContentFile as PyContentFile, Github as PyGithub, Repository as PyRepository
-from github.GithubException import UnknownObjectException, GithubException
 from pathlib import Path
-from typing import List, Optional
 from unittest.mock import patch
+
+import tomli
+from github import ContentFile as PyContentFile
+from github import Github as PyGithub
+from github import Repository as PyRepository
+from github.GithubException import GithubException, UnknownObjectException
 
 from ledgered.manifest import MANIFEST_FILE_NAME, Manifest
 
@@ -32,19 +34,18 @@ class Condition(IntEnum):
 class NoManifestException(FileNotFoundError):
     def __init__(self, repository: "AppRepository"):
         super().__init__(
-            f"`ledger_app.toml` manifest not found in repository '{repository.url}', "
-            f"branch '{repository.current_branch}'."
+            f"`ledger_app.toml` manifest not found in repository '{repository.url}', branch '{repository.current_branch}'."
         )
 
 
 class AppRepository(PyRepository.Repository):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._manifest: Optional[Manifest] = None
-        self._makefile: Optional[str] = None
+        self._manifest: Manifest | None = None
+        self._makefile: str | None = None
         self._branch: str = self.default_branch
-        self._variant_param: Optional[str] = None
-        self._variant_values: List[str] = []
+        self._variant_param: str | None = None
+        self._variant_values: list[str] = []
 
     @property
     def manifest(self) -> Manifest:
@@ -53,11 +54,11 @@ class AppRepository(PyRepository.Repository):
                 manifest = self.get_contents(MANIFEST_FILE_NAME, ref=self.current_branch)
             except GithubException as e:
                 if e.status == 404:
-                    raise NoManifestException(self)
+                    raise NoManifestException(self) from e
                 raise e
             except UnknownObjectException as e:
                 if e.status == 404:
-                    raise NoManifestException(self)
+                    raise NoManifestException(self) from e
                 raise e
 
             # `get_contents` can return a list, but here there can only be one manifest
@@ -79,22 +80,20 @@ class AppRepository(PyRepository.Repository):
     def makefile(self) -> str:
         if self._makefile is None:
             # paths on Windows contain "\" which are not compatible with GitHub remote paths
-            makefile = self.get_contents(
-                str(self.makefile_path).replace("\\", "/"), ref=self.current_branch
-            )
+            makefile = self.get_contents(str(self.makefile_path).replace("\\", "/"), ref=self.current_branch)
             # `get_contents` can return a list, but here there can only be one Makefile / Cargo.toml
             assert isinstance(makefile, PyContentFile.ContentFile)
             self._makefile = makefile.decoded_content.decode()
         return self._makefile
 
     @property
-    def variants(self) -> List[str]:
+    def variants(self) -> list[str]:
         if not self._variant_values:
             self._set_variants()
         return self._variant_values
 
     @property
-    def variant_param(self) -> Optional[str]:
+    def variant_param(self) -> str | None:
         if self._variant_param is None:
             self._set_variants()
         return self._variant_param
@@ -174,9 +173,7 @@ class AppRepository(PyRepository.Repository):
                 # We can have multiple values here, ex: `VARIANT_VALUES = bitcoin_testnet bitcoin`
                 # Sometimes, it can be a computed value in the Makefile, ex: `VARIANT_VALUES = $(SUPPORTED_CHAINS)`
                 # => No solution to get them for now
-                self._variant_values = [
-                    val.strip() for val in line.split("=")[1].split() if not val.startswith("$(")
-                ]
+                self._variant_values = [val.strip() for val in line.split("=")[1].split() if not val.startswith("$(")]
 
             if self._variant_param is not None and self._variant_values:
                 break
@@ -186,21 +183,21 @@ class AppRepository(PyRepository.Repository):
 
 
 class GitHubApps(list):
-    def __init__(self, apps: List[AppRepository]):
+    def __init__(self, apps: list[AppRepository]):
         super().__init__([r for r in apps if r.name.startswith("app-")])
 
     def filter(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         archived: Condition = Condition.WITH,
         private: Condition = Condition.WITH,
         legacy: Condition = Condition.WITH,
         plugin: Condition = Condition.WITH,
-        only_list: Optional[List[str]] = None,
-        exclude_list: Optional[List[str]] = None,
-        sdk: Optional[List[str]] = None,
+        only_list: list[str] | None = None,
+        exclude_list: list[str] | None = None,
+        sdk: list[str] | None = None,
     ) -> "GitHubApps":
-        new_list: List[AppRepository] = [i for i in self]
+        new_list: list[AppRepository] = [i for i in self]
         # only_list filtering (takes precedence on exclude_list)
         if only_list:
             new_list = [r for r in new_list if r.name in only_list]
@@ -245,7 +242,7 @@ class GitHubApps(list):
 
         return GitHubApps(new_list)
 
-    def first(self, *args, **kwargs) -> Optional[AppRepository]:
+    def first(self, *args, **kwargs) -> AppRepository | None:
         results = self.filter(*args, **kwargs)
         return results[0] if results else None
 
@@ -254,7 +251,7 @@ class GitHubLedgerHQ(PyGithub):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._org = self.get_organization(LEDGER_ORG_NAME)
-        self._apps: Optional[GitHubApps] = None
+        self._apps: GitHubApps | None = None
 
     @property
     def apps(self) -> GitHubApps:

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from unittest import TestCase
-from unittest.mock import patch
 from pathlib import Path
 from typing import Any
+from unittest import TestCase
+from unittest.mock import patch
 
 from ledgered import binary as B
 
@@ -45,9 +45,7 @@ class TestSections(TestCase):
 
     def test___str__(self):
         sections = B.Sections(**self.inputs)
-        self.assertEqual(
-            "\n".join(f"{k} {v}" for k, v in sorted(self.inputs.items())), str(sections)
-        )
+        self.assertEqual("\n".join(f"{k} {v}" for k, v in sorted(self.inputs.items())), str(sections))
 
     def test_json(self):
         sections = B.Sections(**self.inputs)

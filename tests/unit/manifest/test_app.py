@@ -18,9 +18,9 @@ class TestAppConfig(TestCase):
 
     def test___init___nok_unknown_sdk(self):
         with self.assertRaises(ValueError):
-            AppConfig(sdk="Java", build_directory=str(), devices=set())
+            AppConfig(sdk="Java", build_directory="", devices=set())
 
     def test___init___nok_unknown_device(self):
         devices = {"nanosp", "flex", "hic sunt", "dracones"}
         with self.assertRaises(KeyError):
-            AppConfig(sdk="rust", build_directory=str(), devices=devices)
+            AppConfig(sdk="rust", build_directory="", devices=devices)

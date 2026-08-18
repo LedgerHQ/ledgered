@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 
 from ledgered.serializers import Jsonable, JsonDict, JsonSet
+
 from .constants import DEFAULT_USE_CASE
 from .errors import MissingField
 from .utils import getLogger
@@ -22,9 +22,9 @@ class TestsDependencyConfig(Jsonable):
 
     url: str
     ref: str
-    use_case: Optional[str]
+    use_case: str | None
 
-    def __init__(self, url: str, ref: str, base_dir: Path, use_case: Optional[str] = None) -> None:
+    def __init__(self, url: str, ref: str, base_dir: Path, use_case: str | None = None) -> None:
         self.url = url
         self.ref = ref
         self.use_case = use_case or DEFAULT_USE_CASE
@@ -33,9 +33,7 @@ class TestsDependencyConfig(Jsonable):
 
     @property
     def dir(self) -> Path:
-        return (
-            self._base_dir / APPLICATION_DIRECTORY_NAME / f"{self._name}-{self.ref}-{self.use_case}"
-        )
+        return self._base_dir / APPLICATION_DIRECTORY_NAME / f"{self._name}-{self.ref}-{self.use_case}"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TestsDependencyConfig):
@@ -58,7 +56,7 @@ class TestsDependenciesConfig(Jsonable):
 
     dependencies: JsonSet
 
-    def __init__(self, dependencies: List[Dict], base_dir: Path) -> None:
+    def __init__(self, dependencies: list[dict], base_dir: Path) -> None:
         logger = getLogger()
         self.dependencies = JsonSet()
         for dep in dependencies:
@@ -78,15 +76,15 @@ class TestsDependenciesConfig(Jsonable):
 class TestsConfig(Jsonable):
     __test__ = False  # deactivate pytest discovery warning
 
-    unit_directory: Optional[Path]
-    pytest_directory: Optional[Path]
-    dependencies: Optional[JsonDict]
+    unit_directory: Path | None
+    pytest_directory: Path | None
+    dependencies: JsonDict | None
 
     def __init__(
         self,
-        pytest_directory: Optional[Union[str, Path]] = None,
-        unit_directory: Optional[Union[str, Path]] = None,
-        dependencies: Optional[Dict[str, List]] = None,
+        pytest_directory: str | Path | None = None,
+        unit_directory: str | Path | None = None,
+        dependencies: dict[str, list] | None = None,
     ) -> None:
         logger = getLogger()
         logger.debug("Parsing test dependencies")
@@ -109,15 +107,15 @@ class PyTestsConfig(Jsonable):
 
     key: str
     directory: Path
-    self_use_case: Optional[str]
-    dependencies: Optional[JsonDict]
+    self_use_case: str | None
+    dependencies: JsonDict | None
 
     def __init__(
         self,
         key: str,
-        directory: Optional[str] = None,
-        self_use_case: Optional[str] = None,
-        dependencies: Optional[Dict] = None,
+        directory: str | None = None,
+        self_use_case: str | None = None,
+        dependencies: dict | None = None,
     ) -> None:
         logger = getLogger()
         logger.debug("Parsing pytests parameters")
@@ -141,11 +139,11 @@ class PyTestsConfig(Jsonable):
 class UnitTestsConfig(Jsonable):
     __test__ = False  # deactivate pytest discovery warning
 
-    unit_directory: Optional[Path]
+    unit_directory: Path | None
 
     def __init__(
         self,
-        directory: Optional[Union[str, Path]] = None,
+        directory: str | Path | None = None,
     ) -> None:
         logger = getLogger()
         logger.debug("Parsing unit tests")

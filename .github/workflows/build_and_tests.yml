@@ -30,13 +30,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ['3.10', '3.11', '3.12', '3.13']
+        python_version: ['3.11', '3.12', '3.13']
     steps:
     - name: Clone
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Setup Python version
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python_version }}
 
@@ -52,7 +52,7 @@ jobs:
       run: pytest -v --tb=short tests/functional --cov ledgered --cov-report xml --cov-append --token "${{ secrets.GITHUB_TOKEN }}"
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v7
       with:
         name: codecov-ledgered
         token: ${{ secrets.CODECOV_TOKEN }}

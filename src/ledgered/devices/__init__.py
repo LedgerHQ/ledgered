@@ -2,8 +2,9 @@ import dataclasses
 import json
 from enum import IntEnum, auto
 from pathlib import Path
+from typing import ClassVar
+
 from pydantic.dataclasses import dataclass
-from typing import Optional
 
 
 class DeviceType(IntEnum):
@@ -29,7 +30,7 @@ class Device:
     touchable: bool = True
     deprecated: bool = False
     names: list[str] = dataclasses.field(default_factory=lambda: [])
-    _sdk_name: Optional[str] = None
+    _sdk_name: str | None = None
 
     @property
     def name(self) -> str:
@@ -65,11 +66,10 @@ class Devices:
     with _devices_file.open() as filee:
         _devices = json.load(filee)
 
-    DEVICE_DATA = {item.type: item for item in [Device.from_dict(i) for i in _devices]}
+    DEVICE_DATA: ClassVar[dict["DeviceType", "Device"]] = {item.type: item for item in [Device.from_dict(i) for i in _devices]}
 
     def __iter__(self):
-        for d in self.DEVICE_DATA.values():
-            yield d
+        yield from self.DEVICE_DATA.values()
 
     @classmethod
     def get_by_type(cls, device_type: DeviceType) -> Device:

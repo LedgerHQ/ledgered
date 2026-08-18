@@ -1,4 +1,3 @@
-from typing import Optional
 from unittest import TestCase
 from unittest.mock import MagicMock
 
@@ -6,9 +5,7 @@ from ledgered.github import Condition, GitHubApps, GitHubLedgerHQ, NoManifestExc
 
 
 class AppRepositoryMock:
-    def __init__(
-        self, name: str, sdk: Optional[str] = "c", archived: bool = False, private: bool = False
-    ):
+    def __init__(self, name: str, sdk: str | None = "c", archived: bool = False, private: bool = False):
         self.name = name
         self.archived = archived
         self.private = private
@@ -51,20 +48,12 @@ class TestGitHubApps(TestCase):
             [self.app1, self.app4, self.app5, self.app6],
         )
         self.assertCountEqual(self.apps.filter(private=Condition.ONLY), [self.app3])
-        self.assertCountEqual(
-            self.apps.filter(legacy=Condition.WITHOUT), [self.app1, self.app3, self.app4, self.app5]
-        )
+        self.assertCountEqual(self.apps.filter(legacy=Condition.WITHOUT), [self.app1, self.app3, self.app4, self.app5])
         self.assertCountEqual(self.apps.filter(legacy=Condition.ONLY), [self.app6])
-        self.assertCountEqual(
-            self.apps.filter(plugin=Condition.WITHOUT), [self.app1, self.app3, self.app4, self.app6]
-        )
+        self.assertCountEqual(self.apps.filter(plugin=Condition.WITHOUT), [self.app1, self.app3, self.app4, self.app6])
         self.assertCountEqual(self.apps.filter(plugin=Condition.ONLY), [self.app5])
-        self.assertCountEqual(
-            self.apps.filter(only_list=["app-1", "app-3"]), [self.app1, self.app3]
-        )
-        self.assertCountEqual(
-            self.apps.filter(exclude_list=["app-1", "app-3"]), [self.app4, self.app5, self.app6]
-        )
+        self.assertCountEqual(self.apps.filter(only_list=["app-1", "app-3"]), [self.app1, self.app3])
+        self.assertCountEqual(self.apps.filter(exclude_list=["app-1", "app-3"]), [self.app4, self.app5, self.app6])
         self.assertCountEqual(self.apps.filter(sdk=["rust"]), [self.app1])
 
     def test_first(self):

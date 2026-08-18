@@ -299,8 +299,8 @@ class TestCLIMain(TestCase):
     def test_output_pytest_directories_v2_with_tests_unit_only_json(self):
         # Test manifest with both [pytest.*] sections AND [tests] with only unit_directory
         # The [tests] section should be skipped since it has no pytest_directory
-        from pathlib import Path
         import tempfile
+        from pathlib import Path
 
         manifest_content = """[app]
 build_directory = "./"
