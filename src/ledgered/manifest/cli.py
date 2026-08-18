@@ -4,16 +4,16 @@ import sys
 from argparse import ArgumentParser
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, cast
+from typing import cast
 
-from .constants import MANIFEST_FILE_NAME
 from ..github import GitHubLedgerHQ
+from .constants import MANIFEST_FILE_NAME
 from .manifest import Manifest
-from .tests import TestsConfig, PyTestsConfig
+from .tests import PyTestsConfig, TestsConfig
 from .utils import getLogger
 
 
-def text_output(content: Dict, indent: int = 0) -> None:
+def text_output(content: dict, indent: int = 0) -> None:
     if indent == 0 and len(content) == 1:
         k, v = content.popitem()
         if isinstance(v, (dict, list, set, tuple)):
@@ -66,8 +66,7 @@ def set_parser() -> ArgumentParser:
         "--token",
         required=False,
         default=None,
-        help="Provide a GitHub token so that functional test won't trigger API "
-        "restrictions too fast",
+        help="Provide a GitHub token so that functional test won't trigger API restrictions too fast",
     )
     parser.add_argument(
         "-u",
@@ -90,8 +89,7 @@ def set_parser() -> ArgumentParser:
         required=False,
         action="store_true",
         default=False,
-        help="outputs the build directory (where the Makefile in C app, or the "
-        "Cargo.toml in Rust app is expected to be)",
+        help="outputs the build directory (where the Makefile in C app, or the Cargo.toml in Rust app is expected to be)",
     )
     parser.add_argument(
         "-od",
@@ -135,9 +133,7 @@ def set_parser() -> ArgumentParser:
         nargs="*",
         help="outputs the use cases. Fails if none",
     )
-    parser.add_argument(
-        "-j", "--json", required=False, action="store_true", help="outputs as JSON rather than text"
-    )
+    parser.add_argument("-j", "--json", required=False, action="store_true", help="outputs as JSON rather than text")
     ##############################################################
     # New commands for Manifest v2
     ##############################################################
@@ -197,7 +193,7 @@ def main() -> None:  # pragma: no cover
 
     # no check
     logger.info("Displaying manifest info")
-    display_content: Dict = defaultdict(dict)
+    display_content: dict = defaultdict(dict)
 
     if args.output_build_directory:
         display_content["build_directory"] = str(repo_manifest.app.build_directory)
@@ -223,9 +219,7 @@ def main() -> None:  # pragma: no cover
             dependencies = repo_manifest.pytests[0].dependencies.json
         non_empty = len(dependencies) > 0
         if len(args.output_tests_dependencies) != 0:
-            dependencies = {
-                k: v for (k, v) in dependencies.items() if k in args.output_tests_dependencies
-            }
+            dependencies = {k: v for (k, v) in dependencies.items() if k in args.output_tests_dependencies}
         if not len(dependencies) and non_empty:
             logger.error("No use case match these ones: '%s'", args.output_tests_dependencies)
             sys.exit(2)
@@ -233,20 +227,15 @@ def main() -> None:  # pragma: no cover
 
     if args.output_tests_unit_directory:
         if repo_manifest.unit_tests is None and (
-            len(repo_manifest.pytests) == 0
-            or cast(TestsConfig, repo_manifest.pytests[0]).unit_directory is None
+            len(repo_manifest.pytests) == 0 or cast(TestsConfig, repo_manifest.pytests[0]).unit_directory is None
         ):
             logger.error("This manifest does not contains the 'unit_tests.directory' field")
             sys.exit(2)
         else:
             if repo_manifest.unit_tests is not None:
-                display_content["tests"]["unit_directory"] = str(
-                    repo_manifest.unit_tests.unit_directory
-                )
+                display_content["tests"]["unit_directory"] = str(repo_manifest.unit_tests.unit_directory)
             else:
-                display_content["tests"]["unit_directory"] = str(
-                    cast(TestsConfig, repo_manifest.pytests[0]).unit_directory
-                )
+                display_content["tests"]["unit_directory"] = str(cast(TestsConfig, repo_manifest.pytests[0]).unit_directory)
 
     if args.output_tests_pytest_directory:
         if len(repo_manifest.pytests) == 0:
@@ -284,9 +273,7 @@ def main() -> None:  # pragma: no cover
                 if len(args.output_pytest_directories) == 1:
                     if idx != int(args.output_pytest_directories[0]):
                         continue
-                display_content["pytest_directories"].append(
-                    {"name": test_config.key, "directory": str(test_config.directory)}
-                )
+                display_content["pytest_directories"].append({"name": test_config.key, "directory": str(test_config.directory)})
             if isinstance(test_config, TestsConfig):
                 # Also add legacy format to the output list, but only if pytest_directory is defined
                 if test_config.pytest_directory is not None:

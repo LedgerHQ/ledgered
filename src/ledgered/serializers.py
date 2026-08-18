@@ -1,14 +1,14 @@
-from typing import Any, Dict, List, Union
+from typing import Any
 
 
-def to_str_int(value: Any) -> Union[int, str]:
+def to_str_int(value: Any) -> int | str:
     return str(value) if not isinstance(value, int) else value
 
 
 class Jsonable:
     @property
-    def json(self) -> Union[Dict, List]:
-        output: Dict[Union[str, int], Any] = dict()
+    def json(self) -> dict | list:
+        output: dict[str | int, Any] = dict()
         for key, value in self.__dict__.items():
             if key.startswith("_"):
                 # 'hidden' properties are not to be included into the output
@@ -22,8 +22,8 @@ class Jsonable:
 
 class JsonList(list, Jsonable):
     @property
-    def json(self) -> List:
-        output: List[Any] = list()
+    def json(self) -> list:
+        output: list[Any] = list()
         for element in self:
             if isinstance(element, Jsonable):
                 output.append(element.json)
@@ -34,8 +34,8 @@ class JsonList(list, Jsonable):
 
 class JsonSet(set, Jsonable):
     @property
-    def json(self) -> List:
-        output: List[Any] = list()
+    def json(self) -> list:
+        output: list[Any] = list()
         for element in self:
             if isinstance(element, Jsonable):
                 output.append(element.json)
@@ -46,8 +46,8 @@ class JsonSet(set, Jsonable):
 
 class JsonDict(dict, Jsonable):
     @property
-    def json(self) -> Dict:
-        output: Dict[Union[str, int], Any] = dict()
+    def json(self) -> dict:
+        output: dict[str | int, Any] = dict()
         for key, value in self.items():
             if isinstance(value, Jsonable):
                 output[key] = value.json

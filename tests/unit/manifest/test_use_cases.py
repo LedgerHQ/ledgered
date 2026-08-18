@@ -30,7 +30,7 @@ class TestUseCaseConfig(TestCase):
         self.assertEqual(self.uc.get(self.key), self.cases[self.key])
 
     def test_get_default(self):
-        self.assertEqual(self.uc.get(DEFAULT_USE_CASE), str())
+        self.assertEqual(self.uc.get(DEFAULT_USE_CASE), "")
 
     def test_get_nok(self):
         with self.assertRaises(KeyError):

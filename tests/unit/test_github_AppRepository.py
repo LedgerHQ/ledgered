@@ -1,5 +1,6 @@
 from unittest import TestCase
-from unittest.mock import patch, PropertyMock
+from unittest.mock import PropertyMock, patch
+
 from github import Github
 
 from ledgered.github import AppRepository
@@ -92,9 +93,7 @@ class TestAppRepository(TestCase):
         self.assertIsNone(app_repo._set_variants())
 
         self.assertEqual(app_repo._variant_param, "--features")
-        self.assertListEqual(
-            app_repo._variant_values, ["default", "variant_testnet", "variant_betanet"]
-        )
+        self.assertListEqual(app_repo._variant_values, ["default", "variant_testnet", "variant_betanet"])
 
     def test__set_variants_rust_no_feature(self):
         AppRepository.makefile = '[package]\nname = "app-boilerplate-rust"\n'

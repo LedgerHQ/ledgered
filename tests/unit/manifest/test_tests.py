@@ -4,12 +4,12 @@ from unittest import TestCase
 from ledgered.manifest.constants import DEFAULT_USE_CASE
 from ledgered.manifest.errors import MissingField
 from ledgered.manifest.tests import (
-    DuplicateDependencyError,
-    TestsConfig,
-    TestsDependencyConfig,
-    TestsDependenciesConfig,
     APPLICATION_DIRECTORY_KEY,
     APPLICATION_DIRECTORY_NAME,
+    DuplicateDependencyError,
+    TestsConfig,
+    TestsDependenciesConfig,
+    TestsDependencyConfig,
 )
 
 
@@ -69,17 +69,11 @@ class TestTestsDependenciesConfig(TestCase):
 
     def test___init__nok(self):
         with self.assertRaises(DuplicateDependencyError):
-            TestsDependenciesConfig(
-                [{"url": self.u1, "ref": self.r1, "use_case": self.uc1}] * 2, base_dir="something"
-            )
+            TestsDependenciesConfig([{"url": self.u1, "ref": self.r1, "use_case": self.uc1}] * 2, base_dir="something")
 
     def test_json(self):
-        self.input[0][APPLICATION_DIRECTORY_KEY] = str(
-            self.bd / APPLICATION_DIRECTORY_NAME / f"{self.u1}-{self.r1}-{self.uc1}"
-        )
-        self.input[1][APPLICATION_DIRECTORY_KEY] = str(
-            self.bd / APPLICATION_DIRECTORY_NAME / f"{self.u2}-{self.r2}-{self.uc2}"
-        )
+        self.input[0][APPLICATION_DIRECTORY_KEY] = str(self.bd / APPLICATION_DIRECTORY_NAME / f"{self.u1}-{self.r1}-{self.uc1}")
+        self.input[1][APPLICATION_DIRECTORY_KEY] = str(self.bd / APPLICATION_DIRECTORY_NAME / f"{self.u2}-{self.r2}-{self.uc2}")
         # CountEqual rather than ListEqual, as the list is managed as a set and the content can
         # be reordered when serialized back to list
         self.assertCountEqual(self.tdc.json, self.input)
@@ -111,15 +105,9 @@ class TestTestsConfig(TestCase):
         result_json = config.json
         result_deps = result_json.pop("dependencies")
         self.assertEqual(len(result_deps), len(deps))
-        deps["first"][0][APPLICATION_DIRECTORY_KEY] = str(
-            pd / APPLICATION_DIRECTORY_NAME / "url-ref-default"
-        )
-        deps["second"][0][APPLICATION_DIRECTORY_KEY] = str(
-            pd / APPLICATION_DIRECTORY_NAME / "u1-r1-uc1"
-        )
-        deps["second"][1][APPLICATION_DIRECTORY_KEY] = str(
-            pd / APPLICATION_DIRECTORY_NAME / "u2-r2-uc2"
-        )
+        deps["first"][0][APPLICATION_DIRECTORY_KEY] = str(pd / APPLICATION_DIRECTORY_NAME / "url-ref-default")
+        deps["second"][0][APPLICATION_DIRECTORY_KEY] = str(pd / APPLICATION_DIRECTORY_NAME / "u1-r1-uc1")
+        deps["second"][1][APPLICATION_DIRECTORY_KEY] = str(pd / APPLICATION_DIRECTORY_NAME / "u2-r2-uc2")
         for k, v in result_deps.items():
             self.assertIn(k, deps)
             self.assertCountEqual(v, deps[k])

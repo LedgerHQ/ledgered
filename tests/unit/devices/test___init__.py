@@ -1,5 +1,6 @@
-from ledgered.devices import Device, DeviceType, Devices, Resolution
 from unittest import TestCase
+
+from ledgered.devices import Device, Devices, DeviceType, Resolution
 
 
 class TestDevice(TestCase):

@@ -1,30 +1,32 @@
 import logging
-import tomli
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, IO, Optional, List, Union
+from typing import IO
+
+import tomli
 
 from ledgered.serializers import Jsonable
+
 from .app import AppConfig
 from .constants import MANIFEST_FILE_NAME
-from .tests import TestsConfig, PyTestsConfig, UnitTestsConfig
+from .tests import PyTestsConfig, TestsConfig, UnitTestsConfig
 from .use_cases import UseCasesConfig
 
 
 @dataclass
 class Manifest(Jsonable):
     app: AppConfig
-    use_cases: Optional[UseCasesConfig]
-    unit_tests: Optional[UnitTestsConfig]
-    pytests: List[Union[PyTestsConfig, TestsConfig]]
+    use_cases: UseCasesConfig | None
+    unit_tests: UnitTestsConfig | None
+    pytests: list[PyTestsConfig | TestsConfig]
 
     def __init__(
         self,
-        app: Dict,
-        tests: Optional[Dict] = None,  # keep the old tests name for backward compatibility
-        pytest: Optional[Dict] = None,
-        unit_tests: Optional[Dict] = None,
-        use_cases: Optional[Dict] = None,
+        app: dict,
+        tests: dict | None = None,  # keep the old tests name for backward compatibility
+        pytest: dict | None = None,
+        unit_tests: dict | None = None,
+        use_cases: dict | None = None,
     ) -> None:
         self.app = AppConfig(**app)
         self.use_cases = None if use_cases is None else UseCasesConfig(**use_cases)
@@ -57,14 +59,10 @@ class Manifest(Jsonable):
         assert path.is_file(), f"'{path.resolve()}' is not a manifest file."
         return cls(**tomli.load(path.open("rb")))
 
-    def check(self, base_directory: Union[str, Path]) -> None:
+    def check(self, base_directory: str | Path) -> None:
         base_directory = Path(base_directory)
         assert base_directory.is_dir(), f"Given '{base_directory}' must be a directory"
-        build_file = (
-            base_directory
-            / self.app.build_directory
-            / ("Cargo.toml" if self.app.is_rust else "Makefile")
-        )
+        build_file = base_directory / self.app.build_directory / ("Cargo.toml" if self.app.is_rust else "Makefile")
         logging.info("Checking existence of file %s", build_file)
         assert build_file.is_file(), (
             f"No file '{build_file}' (from the given base directory "

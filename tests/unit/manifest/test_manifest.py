@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest import TestCase
 
-from ledgered.manifest.manifest import Manifest, MANIFEST_FILE_NAME, TestsConfig
+from ledgered.manifest.manifest import MANIFEST_FILE_NAME, Manifest, TestsConfig
 
 from .. import TEST_MANIFEST_DIRECTORY
 
@@ -15,6 +15,7 @@ class TestManifest(TestCase):
         self.assertFalse(manifest.app.is_c)
 
         self.assertIsInstance(manifest.pytests[0], TestsConfig)
+        assert isinstance(manifest.pytests[0], TestsConfig)
         self.assertEqual(manifest.pytests[0].unit_directory, Path("unit"))
         self.assertEqual(manifest.pytests[0].pytest_directory, Path("pytest"))
 
