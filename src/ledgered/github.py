@@ -1,4 +1,4 @@
-from enum import IntEnum, auto
+from enum import IntEnum, StrEnum, auto
 from pathlib import Path
 from unittest.mock import patch
 
@@ -29,6 +29,14 @@ class Condition(IntEnum):
     WITH = auto()
     WITHOUT = auto()
     ONLY = auto()
+
+
+class Visibility(StrEnum):
+    """GitHub repository visibilities, as returned by `Repository.visibility`."""
+
+    PUBLIC = "public"
+    PRIVATE = "private"
+    INTERNAL = "internal"
 
 
 class NoManifestException(FileNotFoundError):
@@ -191,6 +199,8 @@ class GitHubApps(list):
         name: str | None = None,
         archived: Condition = Condition.WITH,
         private: Condition = Condition.WITH,
+        public: Condition = Condition.WITH,
+        internal: Condition = Condition.WITH,
         legacy: Condition = Condition.WITH,
         plugin: Condition = Condition.WITH,
         only_list: list[str] | None = None,
@@ -210,11 +220,25 @@ class GitHubApps(list):
             new_list = [r for r in new_list if not r.archived]
         elif archived == Condition.ONLY:
             new_list = [r for r in new_list if r.archived]
-        # private filtering
-        if private == Condition.WITHOUT:
-            new_list = [r for r in new_list if not r.private]
-        elif private == Condition.ONLY:
-            new_list = [r for r in new_list if r.private]
+        # visibility filtering: `private`, `public` and `internal` are peers, each one
+        # matching a single GitHub visibility, and are combined into the allowed ones
+        conditions = [
+            (private, Visibility.PRIVATE),
+            (public, Visibility.PUBLIC),
+            (internal, Visibility.INTERNAL),
+        ]
+        # `ONLY` means this visibility and nothing else, hence two of them conflict
+        onlys = [v for c, v in conditions if c == Condition.ONLY]
+        if len(onlys) > 1:
+            raise ValueError("Mutually exclusive visibility filters: " + ", ".join(f"`{v}={Condition.ONLY.name}`" for v in onlys))
+        # `WITHOUT` merely discards a visibility. Discarding all three is a pointless
+        # filtering rather than an error: it simply matches no repository at all.
+        visibilities = set(onlys) if onlys else set(Visibility)
+        for condition, visibility in conditions:
+            if condition == Condition.WITHOUT:
+                visibilities.discard(visibility)
+        if visibilities != set(Visibility):
+            new_list = [r for r in new_list if r.visibility.lower() in visibilities]
         # name filtering
         if name is not None:
             new_list = [r for r in new_list if name.lower() in r.name.lower()]
