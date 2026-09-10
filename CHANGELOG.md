@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-09-10
+
+### Added
+
+- `GitHubApps.filter`: `public` and `internal` conditions, peers of the existing `private` one
+
+### Changed
+
+- `GitHubApps.filter`: `private` now matches the `private` GitHub visibility strictly. Internal repositories, which the API also flags as private, are no longer matched by `private=Condition.ONLY`; use `public=Condition.WITHOUT` to get both
+
 ## [0.15.0] - 2026-06-23
 
 ### Added
