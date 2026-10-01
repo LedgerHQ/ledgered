@@ -7,9 +7,11 @@ from ledgered.manifest.tests import (
     APPLICATION_DIRECTORY_KEY,
     APPLICATION_DIRECTORY_NAME,
     DuplicateDependencyError,
+    PyTestsConfig,
     TestsConfig,
     TestsDependenciesConfig,
     TestsDependencyConfig,
+    UnitTestsConfig,
 )
 
 
@@ -124,3 +126,34 @@ class TestTestsConfig(TestCase):
     def test___init__missing_field(self):
         with self.assertRaises(MissingField):
             TestsConfig(dependencies="something")
+
+
+class TestPyTestsConfig(TestCase):
+    def test___init__ok(self):
+        deps = {"first": [{"url": "url", "ref": "ref"}]}
+        config = PyTestsConfig(key="standalone", directory="tests", self_use_case="debug", dependencies=deps)
+        self.assertEqual(config.key, "standalone")
+        self.assertEqual(config.directory, Path("tests"))
+        self.assertEqual(config.self_use_case, "debug")
+        self.assertIsNotNone(config.dependencies)
+        assert config.dependencies is not None
+        self.assertListEqual(list(config.dependencies), ["first"])
+        self.assertIsInstance(config.dependencies["first"], TestsDependenciesConfig)
+
+    def test___init__defaults(self):
+        config = PyTestsConfig(key="standalone", directory="tests")
+        self.assertEqual(config.self_use_case, DEFAULT_USE_CASE)
+        self.assertIsNone(config.dependencies)
+
+    def test___init__missing_directory(self):
+        with self.assertRaises(MissingField):
+            PyTestsConfig(key="standalone")
+
+
+class TestUnitTestsConfig(TestCase):
+    def test___init__(self):
+        self.assertEqual(UnitTestsConfig(directory="unit").unit_directory, Path("unit"))
+        self.assertEqual(UnitTestsConfig(directory=Path("unit")).unit_directory, Path("unit"))
+
+    def test___init__empty(self):
+        self.assertIsNone(UnitTestsConfig().unit_directory)
