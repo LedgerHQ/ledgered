@@ -46,10 +46,10 @@ jobs:
         pip install -U .[dev]
 
     - name: Run unit tests and generate coverage
-      run: pytest -v --tb=short tests/unit --cov ledgered --cov-report xml
+      run: pytest -v --tb=short tests/unit --cov ledgered --cov-report term --cov-report xml
 
     - name: Run functional tests and generate coverage
-      run: pytest -v --tb=short tests/functional --cov ledgered --cov-report xml --cov-append --token "${{ secrets.GITHUB_TOKEN }}"
+      run: pytest -v --tb=short tests/functional --cov ledgered --cov-report term --cov-report xml --cov-append --token "${{ secrets.GITHUB_TOKEN }}"
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v7

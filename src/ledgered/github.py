@@ -1,12 +1,13 @@
 from enum import IntEnum, StrEnum, auto
 from pathlib import Path
+from typing import cast
 from unittest.mock import patch
 
 import tomli
 from github import ContentFile as PyContentFile
 from github import Github as PyGithub
 from github import Repository as PyRepository
-from github.GithubException import GithubException, UnknownObjectException
+from github.GithubException import GithubException
 
 from ledgered.manifest import MANIFEST_FILE_NAME, Manifest
 
@@ -61,10 +62,6 @@ class AppRepository(PyRepository.Repository):
             try:
                 manifest = self.get_contents(MANIFEST_FILE_NAME, ref=self.current_branch)
             except GithubException as e:
-                if e.status == 404:
-                    raise NoManifestException(self) from e
-                raise e
-            except UnknownObjectException as e:
                 if e.status == 404:
                     raise NoManifestException(self) from e
                 raise e
@@ -281,14 +278,14 @@ class GitHubLedgerHQ(PyGithub):
     def apps(self) -> GitHubApps:
         if self._apps is None:
             with patch("github.Repository.Repository", AppRepository):
-                self._apps = GitHubApps(self._org.get_repos())
+                self._apps = GitHubApps(cast(list[AppRepository], self._org.get_repos()))
         return self._apps
 
-    def get_app(self, name) -> AppRepository:
+    def get_app(self, name) -> AppRepository:  # type: ignore[override]
         """
         Fetch a specific application repository on GitHub.
         The name must be exact.
         """
         assert name.startswith("app-"), f"'{name}' is not prefixed with 'app-'!"
         with patch("github.Repository.Repository", AppRepository):
-            return self._org.get_repo(name)
+            return cast(AppRepository, self._org.get_repo(name))

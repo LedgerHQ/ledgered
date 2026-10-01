@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from ledgered.github import Condition, GitHubApps, GitHubLedgerHQ, NoManifestException, Visibility
 
@@ -90,6 +90,12 @@ class TestGitHubApps(TestCase):
         self.assertCountEqual(self.apps.filter(only_list=["app-1", "app-3"]), [self.app1, self.app3])
         self.assertCountEqual(self.apps.filter(exclude_list=["app-1", "app-3"]), [self.app4, self.app5, self.app6, self.app7])
         self.assertCountEqual(self.apps.filter(sdk=["rust"]), [self.app1])
+        self.assertCountEqual(self.apps.filter(sdk=["C"]), [self.app3, self.app4, self.app5, self.app6, self.app7])
+
+    def test_filter_sdk_no_manifest(self):
+        no_manifest = AppRepositoryMock("app-no-manifest", sdk=None)
+        apps = GitHubApps([self.app1, no_manifest])
+        self.assertCountEqual(apps.filter(sdk=["rust", "c"]), [self.app1])
 
     def test_first(self):
         self.assertEqual(self.apps.first("3"), self.app3)
@@ -98,7 +104,26 @@ class TestGitHubApps(TestCase):
 
 class TestGitHubLedgerHQ(TestCase):
     def setUp(self):
+        org_patch = patch.object(GitHubLedgerHQ, "get_organization")
+        self.get_organization = org_patch.start()
+        self.addCleanup(org_patch.stop)
+        self.org = self.get_organization.return_value
         self.g = GitHubLedgerHQ()
+
+    def test___init__(self):
+        self.get_organization.assert_called_once_with("ledgerhq")
+
+    def test_apps(self):
+        self.org.get_repos.return_value = [AppRepositoryMock("app-1"), AppRepositoryMock("not-app")]
+        apps = self.g.apps
+        self.assertIsInstance(apps, GitHubApps)
+        self.assertListEqual([a.name for a in apps], ["app-1"])
+        self.assertIs(self.g.apps, apps)
+        self.org.get_repos.assert_called_once()
+
+    def test_get_app(self):
+        self.assertIs(self.g.get_app("app-foo"), self.org.get_repo.return_value)
+        self.org.get_repo.assert_called_once_with("app-foo")
 
     def test_get_app_wrong_name(self):
         with self.assertRaises(AssertionError):

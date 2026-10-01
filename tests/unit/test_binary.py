@@ -1,4 +1,7 @@
+import ast
+import logging
 from dataclasses import dataclass
+from io import StringIO
 from pathlib import Path
 from typing import Any
 from unittest import TestCase
@@ -81,3 +84,49 @@ class TestLedgerBinaryApp(TestCase):
         path = "/dev/urandom"
         with patch("ledgered.binary.ELFFile"):
             B.LedgerBinaryApp(path)
+
+
+class TestMain(TestCase):
+    def setUp(self):
+        self.sections = B.Sections(app_name="some app", api_level="12")
+        app_patch = patch("ledgered.binary.LedgerBinaryApp")
+        self.app = app_patch.start()
+        self.app.return_value.sections = self.sections
+        self.addCleanup(app_patch.stop)
+        level = logging.root.level
+        self.addCleanup(logging.root.setLevel, level)
+
+    def _main(self, *args: str) -> str:
+        with patch("sys.argv", ["ledger-binary", *args]), patch("sys.stdout", new_callable=StringIO) as stdout:
+            B.main()
+        return stdout.getvalue()
+
+    def test_set_parser(self):
+        args = B.set_parser().parse_args(["-vv", "-j", "some/file"])
+        self.assertEqual(args.verbose, 2)
+        self.assertTrue(args.json)
+        self.assertEqual(args.binary, Path("some/file"))
+
+    def test_main_text(self):
+        with patch.object(Path, "is_file", return_value=True):
+            output = self._main("some/file")
+        self.assertEqual(output, f"{self.sections}\n")
+        self.app.assert_called_once_with(Path("some/file"))
+
+    def test_main_json(self):
+        with patch.object(Path, "is_file", return_value=True):
+            output = self._main("--json", "some/file")
+        # documented as 'JSON-like': a Python dict repr, not strict JSON
+        self.assertDictEqual(ast.literal_eval(output), self.sections.json)
+
+    def test_main_verbosity(self):
+        for flags, level in [(["-v"], logging.INFO), (["-vv"], logging.DEBUG), (["-vvv"], logging.DEBUG)]:
+            with self.subTest(flags=flags), patch.object(Path, "is_file", return_value=True):
+                logging.root.setLevel(logging.WARNING)
+                self._main(*flags, "some/file")
+                self.assertEqual(logging.root.level, level)
+
+    def test_main_not_a_file(self):
+        with patch.object(Path, "is_file", return_value=False), self.assertRaises(AssertionError):
+            self._main("/not/existing/file")
+        self.app.assert_not_called()

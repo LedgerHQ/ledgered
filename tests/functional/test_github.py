@@ -29,14 +29,16 @@ def test_exchange_makefile_path(exchange):
 
 
 def test_exchange_makefile(exchange):
-    makefile = requests.get("https://raw.githubusercontent.com/LedgerHQ/app-exchange/develop/Makefile").content.decode()
+    url = f"https://raw.githubusercontent.com/LedgerHQ/app-exchange/{exchange.default_branch}/Makefile"
+    makefile = requests.get(url).content.decode()
     assert exchange.makefile == makefile
 
 
 def test_exchange_branches(exchange):
-    assert exchange.current_branch == "develop"
-    exchange.current_branch = "master"
-    assert exchange.current_branch == "master"
+    assert exchange.current_branch == exchange.default_branch
+    other_branch = "develop" if exchange.default_branch == "master" else "master"
+    exchange.current_branch = other_branch
+    assert exchange.current_branch == other_branch
 
     with pytest.raises(GithubException):
         exchange.current_branch = "does not exists"
