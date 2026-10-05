@@ -24,6 +24,15 @@ class TestManifest(TestCase):
         tests = {"unit_directory": "unit", "pytest_directory": "pytest"}
         self.check_ledger_app_toml(Manifest(app, tests))
 
+    def test___init__metadata(self):
+        app = {"sdk": "c", "devices": ["flex"], "build_directory": ""}
+        metadata = {"author": "Ledger", "contact": "support@ledger.com", "compatible_wallets": ["Ledger Wallet"]}
+        manifest = Manifest(app, metadata=metadata)
+        assert manifest.metadata is not None
+        self.assertEqual(manifest.metadata.author, "Ledger")
+        self.assertEqual(manifest.metadata.compatible_wallets, ["Ledger Wallet"])
+        self.assertIsNone(Manifest(app).metadata)
+
     def test___init__pytest_and_unit_tests(self):
         app = {"sdk": "c", "devices": ["nanos"], "build_directory": ""}
         pytest = {"standalone": {"directory": "tests/standalone"}, "swap": {"directory": "tests/swap"}}

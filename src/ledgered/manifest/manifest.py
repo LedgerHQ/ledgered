@@ -9,6 +9,7 @@ from ledgered.serializers import Jsonable
 
 from .app import AppConfig
 from .constants import MANIFEST_FILE_NAME
+from .metadata import MetadataConfig
 from .tests import PyTestsConfig, TestsConfig, UnitTestsConfig
 from .use_cases import UseCasesConfig
 
@@ -19,6 +20,7 @@ class Manifest(Jsonable):
     use_cases: UseCasesConfig | None
     unit_tests: UnitTestsConfig | None
     pytests: list[PyTestsConfig | TestsConfig]
+    metadata: MetadataConfig | None
 
     def __init__(
         self,
@@ -27,6 +29,7 @@ class Manifest(Jsonable):
         pytest: dict | None = None,
         unit_tests: dict | None = None,
         use_cases: dict | None = None,
+        metadata: dict | None = None,
     ) -> None:
         self.app = AppConfig(**app)
         self.use_cases = None if use_cases is None else UseCasesConfig(**use_cases)
@@ -43,6 +46,8 @@ class Manifest(Jsonable):
             self.unit_tests = UnitTestsConfig(**unit_tests)
         else:
             self.unit_tests = None
+
+        self.metadata = None if metadata is None else MetadataConfig(**metadata)
 
     @classmethod
     def from_string(cls, content: str) -> "Manifest":
