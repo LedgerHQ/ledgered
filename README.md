@@ -41,6 +41,11 @@ test_with_feature_activated = "TEST_FLAG_TO_SET=1"
 [unit_tests]
 directory = "./unit-tests/"
 
+[metadata]
+author = "Ledger"
+contact = "support@ledger.com"
+compatible_wallets = ["Ledger Wallet"]
+
 [pytest.standalone]
 directory = "tests/"
 
@@ -63,6 +68,7 @@ testing_with_prod = [
 | `[app]`                    | yes      | `sdk` (`C` or `Rust`), `build_directory` (where the `Makefile` / `Cargo.toml` is), `devices`                                  |
 | `[use_cases]`              | no       | `<use_case> = "<options>"`: make variables for C apps (`DEBUG=1`), Cargo options for Rust apps. `default` is implicit (no option) |
 | `[unit_tests]`             | no       | `directory`                                                                                                                   |
+| `[metadata]`               | no       | `author`, `contact` (email address), required; `publisher`, `support_url`, `compatible_wallets` (list), optional. Unknown fields are rejected |
 | `[pytest.<name>]`          | no       | `directory` (contains a `conftest.py`), `self_use_case` (use case to build the app with for these tests)                      |
 | `[pytest.<name>.dependencies]` | no   | `<scenario> = [{url, ref, use_case}, ...]`: apps to sideload for the tests                                                    |
 
